@@ -8,3 +8,5 @@ coverage
 server/uploads
 client/.vite
 *.log
+
+.vercel

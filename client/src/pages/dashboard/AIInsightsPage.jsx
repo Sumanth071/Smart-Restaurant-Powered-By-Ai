@@ -1,4 +1,4 @@
-import { Bot, Sparkles, WandSparkles } from "lucide-react";
+import { Bot, ChefHat, Clock3, MessageSquare } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import api from "../../api/client";
@@ -45,9 +45,9 @@ const AIInsightsPage = () => {
 
   const quickCards = useMemo(
     () => [
-      { title: "AI Modules", value: 3, subtitle: "Recommendations, chatbot, and busy-hour analytics", icon: Sparkles },
-      { title: "Insight Cards", value: insights?.insights?.length || 0, subtitle: "Generated from live demo data", icon: WandSparkles },
-      { title: "Suggested Actions", value: insights?.suggestions?.length || 0, subtitle: "Operational improvements to present", icon: Bot },
+      { title: "Decision Tools", value: 3, subtitle: "Recommendations, support guidance, and peak-hour forecasting", icon: Clock3 },
+      { title: "Operational Signals", value: insights?.insights?.length || 0, subtitle: "Insights surfaced from bookings, orders, and branch activity", icon: ChefHat },
+      { title: "Suggested Actions", value: insights?.suggestions?.length || 0, subtitle: "Practical service improvements the team can act on", icon: Bot },
     ],
     [insights]
   );
@@ -100,8 +100,8 @@ const AIInsightsPage = () => {
     <div>
       <PageHeader
         eyebrow="AI Modules"
-        title="Food Recommendation, Chatbot, and Analytics"
-        description="A clean AI showcase for your final-year project demo with actionable insights and interactive modules."
+        title="Service Intelligence"
+        description="Use recommendation logic, guest support replies, and busy-hour analysis in a way that feels useful to a real restaurant team."
       />
 
       {error ? (
@@ -117,15 +117,15 @@ const AIInsightsPage = () => {
       {insights ? (
         <>
           <div className="mb-6 grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-            <SectionCard title="Busy Hour Intelligence" subtitle="Peak demand model generated from live operational activity.">
+            <SectionCard title="Busy Hour Intelligence" subtitle="Peak demand trends generated from live operational activity across tables and orders.">
               <BusyHourChart data={insights.busyHours} />
             </SectionCard>
-            <SectionCard title="AI Narrative" subtitle="Auto-generated operational observations.">
+            <SectionCard title="Operations Brief" subtitle="Short takeaways a manager can use before the next shift begins.">
               <div className="space-y-4">
                 {insights.insights.map((item) => (
-                  <div key={item.title} className="rounded-3xl border border-slate-200 p-4">
+                  <div key={item.title} className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
                     <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                    <p className="mt-2 text-sm text-slate-500">{item.detail}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
                   </div>
                 ))}
               </div>
@@ -133,7 +133,7 @@ const AIInsightsPage = () => {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <SectionCard title="AI Food Recommendation System" subtitle="Suggest dishes using guest preferences, budget, and spice profile.">
+            <SectionCard title="Food Recommendation Desk" subtitle="Suggest dishes using guest preferences, budget, and spice profile without making the experience feel robotic.">
               <form onSubmit={handleRecommendationSubmit} className="grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-slate-700">Restaurant</span>
@@ -197,7 +197,7 @@ const AIInsightsPage = () => {
                   />
                 </label>
                 <button type="submit" className="btn-primary md:col-span-2">
-                  Generate Recommendations
+                  Find Suitable Dishes
                 </button>
               </form>
 
@@ -211,7 +211,7 @@ const AIInsightsPage = () => {
                           <p className="font-semibold text-slate-900">{item.name}</p>
                           <p className="text-sm text-slate-500">{item.restaurant}</p>
                         </div>
-                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{item.spiceLevel}</span>
+                        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">{item.spiceLevel}</span>
                       </div>
                       <p className="mt-3 text-sm text-slate-600">{item.reason}</p>
                       <p className="mt-3 font-semibold text-amber-600">{formatCurrency(item.price)}</p>
@@ -221,13 +221,17 @@ const AIInsightsPage = () => {
               </div>
             </SectionCard>
 
-            <SectionCard title="Customer Support Chatbot" subtitle="Rule-based chatbot module that answers common guest questions.">
-              <div className="mb-4 space-y-3 rounded-3xl bg-slate-950 p-4">
+            <SectionCard title="Guest Support Console" subtitle="A guided support module for common guest questions about service, bookings, menu items, and timings.">
+              <div className="mb-4 flex items-center gap-3 rounded-[24px] border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
+                <MessageSquare className="h-4 w-4 text-brand-700" />
+                Replies stay friendly and short so the conversation feels like staff support, not a generic bot dump.
+              </div>
+              <div className="mb-4 space-y-3 rounded-3xl bg-stone-950 p-4">
                 {messages.map((message, index) => (
                   <div key={`${message.from}-${index}`} className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}>
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                        message.from === "user" ? "bg-amber-500 text-white" : "bg-white/10 text-slate-100"
+                        message.from === "user" ? "bg-brand-600 text-white" : "bg-white/10 text-stone-100"
                       }`}
                     >
                       {message.text}

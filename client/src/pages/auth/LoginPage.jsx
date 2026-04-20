@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Clock3, ShieldCheck, UtensilsCrossed } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -65,97 +65,152 @@ const LoginPage = () => {
   };
 
   return (
-    <section className="px-6 py-12 md:px-10 md:py-20">
-      <div className="mx-auto grid max-w-7xl gap-10 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="glass-card overflow-hidden p-8 md:p-10">
-          <div className="mb-10">
-            <div className="mb-4 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-300">
-              Authentication Module
-            </div>
-            <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
-              Multi-role access for the <span className="text-gradient">AI restaurant suite</span>
-            </h1>
-            <p className="mt-4 max-w-2xl text-slate-300">
-              Sign in as super admin, restaurant admin, staff, or guest. This demo-ready authentication flow supports JWT login and new guest registration.
-            </p>
-          </div>
+    <section className="relative overflow-hidden px-6 py-10 md:px-10 md:py-16">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-8rem] top-12 h-56 w-56 rounded-full bg-brand-200/30 blur-3xl" />
+        <div className="absolute bottom-0 right-[-6rem] h-72 w-72 rounded-full bg-brand-100/50 blur-3xl" />
+      </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {demoAccounts.map((account) => (
-              <button
-                key={account.role}
-                type="button"
-                onClick={() => applyDemoAccount(account)}
-                className="rounded-3xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-amber-400/40 hover:bg-white/10"
-              >
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">{account.role}</p>
-                <p className="mt-3 text-lg font-semibold text-white">{account.email}</p>
-                <p className="mt-2 text-sm text-slate-300">{account.note}</p>
-              </button>
-            ))}
+      <div className="relative mx-auto grid min-h-[78vh] max-w-6xl items-center gap-8 xl:grid-cols-[0.98fr_0.82fr]">
+        <div className="relative hidden overflow-hidden rounded-[36px] border border-brand-100 bg-gradient-to-br from-white via-[#fff8f2] to-[#ffe9d6] p-8 text-stone-900 shadow-[0_24px_80px_rgba(244,123,32,0.16)] xl:block">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,123,32,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,199,155,0.35),transparent_28%)]" />
+          <div className="relative flex h-full min-h-[620px] flex-col justify-between">
+            <div>
+              <div className="inline-flex items-center gap-3 rounded-full border border-brand-100 bg-white/80 px-4 py-2 shadow-sm">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50">
+                  <UtensilsCrossed className="h-4 w-4 text-brand-700" />
+                </div>
+                <div>
+                  <p className="font-display text-2xl leading-none text-stone-900">Smart Dine</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-brand-600">Restaurant Operations</p>
+                </div>
+              </div>
+
+              <div className="mt-12 max-w-md">
+                <p className="text-xs font-semibold uppercase tracking-[0.34em] text-brand-600">Sign In</p>
+                <h1 className="mt-5 font-display text-6xl leading-[0.95] text-stone-900">
+                  Calm, refined access for the whole service team.
+                </h1>
+                <p className="mt-5 max-w-sm text-base leading-7 text-stone-600">
+                  A simpler desk for admins, staff, and guests with less noise and faster access.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                { value: "4", label: "Roles" },
+                { value: "30D", label: "JWT Session" },
+                { value: "24/7", label: "Guest Access" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[26px] border border-brand-100 bg-white/85 px-5 py-5 backdrop-blur-sm">
+                  <p className="font-display text-4xl leading-none text-brand-700">{item.value}</p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.24em] text-stone-500">{item.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="glass-panel p-8 md:p-10">
-          <div className="mb-8 flex items-center justify-between">
+        <div className="glass-panel mx-auto w-full max-w-xl p-6 md:p-8">
+          <div className="mb-7 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-500">Access Panel</p>
-              <h2 className="mt-2 font-display text-3xl font-bold text-slate-900">{mode === "login" ? "Login" : "Register as Guest"}</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-600">Access Panel</p>
+              <h2 className="mt-3 font-display text-4xl leading-none text-stone-900">
+                {mode === "login" ? "Welcome back" : "Create account"}
+              </h2>
+              <p className="mt-3 text-sm text-stone-500">
+                {mode === "login" ? "Sign in and continue." : "A quick guest account for bookings and orders."}
+              </p>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-3 text-amber-600">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+              {mode === "login" ? <ShieldCheck className="h-5 w-5" /> : <Clock3 className="h-5 w-5" />}
             </div>
           </div>
 
-          <div className="mb-6 flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
+          <div className="mb-6 flex rounded-2xl border border-stone-200 bg-stone-50 p-1">
             <button
               type="button"
               onClick={() => setMode("login")}
-              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "login" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "login" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500"}`}
             >
-              Login
+              Sign In
             </button>
             <button
               type="button"
               onClick={() => setMode("register")}
-              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "register" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "register" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500"}`}
             >
               Register
             </button>
           </div>
 
-          {error ? <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div> : null}
+          {error ? <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div> : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "register" ? (
               <>
-                <input name="name" value={formValues.name} onChange={handleChange} className="input-shell" placeholder="Full name" />
-                <input name="phone" value={formValues.phone} onChange={handleChange} className="input-shell" placeholder="+91 99999 12345" />
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-stone-700">Guest name</span>
+                  <input name="name" value={formValues.name} onChange={handleChange} className="input-shell" placeholder="Full name" />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-stone-700">Phone number</span>
+                  <input name="phone" value={formValues.phone} onChange={handleChange} className="input-shell" placeholder="+91 99999 12345" />
+                </label>
               </>
             ) : null}
-            <input name="email" type="email" value={formValues.email} onChange={handleChange} className="input-shell" placeholder="Email address" />
-            <input
-              name="password"
-              type="password"
-              value={formValues.password}
-              onChange={handleChange}
-              className="input-shell"
-              placeholder="Password"
-            />
 
-            <button type="submit" disabled={submitting} className="btn-primary w-full">
-              {submitting ? "Please wait..." : mode === "login" ? "Login to Dashboard" : "Create Guest Account"}
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-stone-700">Email</span>
+              <input name="email" type="email" value={formValues.email} onChange={handleChange} className="input-shell" placeholder="Email address" />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-stone-700">Password</span>
+              <input
+                name="password"
+                type="password"
+                value={formValues.password}
+                onChange={handleChange}
+                className="input-shell"
+                placeholder="Password"
+              />
+            </label>
+
+            <button type="submit" disabled={submitting} className="btn-primary w-full justify-center">
+              {submitting ? "Please wait..." : mode === "login" ? "Enter Workspace" : "Create Guest Account"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-slate-500">
-            Guests can also continue directly through the public portal for table booking and food ordering without logging in.
-          </p>
+          <div className="mt-6 border-t border-stone-200 pt-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-stone-400">Quick Demo Access</p>
+              <span className="text-xs text-stone-400">Tap to autofill</span>
+            </div>
 
-          <Link to="/" className="mt-6 inline-flex text-sm font-semibold text-amber-600">
-            Back to guest portal
-          </Link>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {demoAccounts.map((account) => (
+                <button
+                  key={account.role}
+                  type="button"
+                  onClick={() => applyDemoAccount(account)}
+                  className="rounded-[22px] border border-stone-200 bg-stone-50 px-4 py-4 text-left transition hover:border-brand-300 hover:bg-white"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-700">{account.role}</p>
+                  <p className="mt-2 text-sm font-medium text-stone-700">{account.email}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-4 text-sm">
+            <Link to="/" className="font-semibold text-brand-700">
+              Back to guest portal
+            </Link>
+            <p className="text-stone-400">Guest browsing works without sign-in.</p>
+          </div>
         </div>
       </div>
     </section>

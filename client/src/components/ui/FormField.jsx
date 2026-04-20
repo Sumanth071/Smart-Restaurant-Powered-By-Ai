@@ -15,7 +15,7 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
   if (field.type === "textarea") {
     return (
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-slate-700">{field.label}</span>
+        <span className="mb-2 block text-sm font-medium text-stone-700">{field.label}</span>
         <textarea
           rows={field.rows || 4}
           className="input-shell min-h-[120px]"
@@ -30,7 +30,7 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
   if (field.type === "select") {
     return (
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-slate-700">{field.label}</span>
+        <span className="mb-2 block text-sm font-medium text-stone-700">{field.label}</span>
         <select
           className="input-shell"
           value={value ?? ""}
@@ -49,16 +49,16 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
 
   if (field.type === "checkbox") {
     return (
-      <label className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+      <label className="flex items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/90 px-4 py-3">
         <div>
-          <span className="block text-sm font-medium text-slate-800">{field.label}</span>
-          {field.helperText ? <span className="mt-1 block text-xs text-slate-500">{field.helperText}</span> : null}
+          <span className="block text-sm font-medium text-stone-800">{field.label}</span>
+          {field.helperText ? <span className="mt-1 block text-xs text-stone-500">{field.helperText}</span> : null}
         </div>
         <input
           type="checkbox"
           checked={Boolean(value)}
           onChange={(event) => onChange(field.name, event.target.checked)}
-          className="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-300"
+          className="h-5 w-5 rounded border-stone-300 text-brand-500 focus:ring-brand-200"
         />
       </label>
     );
@@ -66,7 +66,7 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-700">{field.label}</span>
+      <span className="mb-2 block text-sm font-medium text-stone-700">{field.label}</span>
       <input
         type={field.type || "text"}
         className={joinClasses("input-shell", field.className)}
@@ -74,7 +74,7 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
         value={value ?? ""}
         onChange={(event) => onChange(field.name, event.target.value)}
       />
-      {field.helperText ? <span className="mt-1 block text-xs text-slate-500">{field.helperText}</span> : null}
+      {field.helperText ? <span className="mt-1 block text-xs text-stone-500">{field.helperText}</span> : null}
     </label>
   );
 };

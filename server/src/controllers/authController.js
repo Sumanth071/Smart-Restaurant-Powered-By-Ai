@@ -6,13 +6,19 @@ import User from "../models/User.js";
 import { roles } from "../config/constants.js";
 import { demoStore } from "../services/demoStore.js";
 
+const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
+const normalizeText = (value = "") => String(value).trim();
+
 const createToken = (userId) =>
   jwt.sign({ id: userId }, process.env.JWT_SECRET || "development-secret", {
-    expiresIn: "7d",
+    expiresIn: process.env.JWT_EXPIRE || "30d",
   });
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const name = normalizeText(req.body.name);
+  const email = normalizeEmail(req.body.email);
+  const password = String(req.body.password || "");
+  const phone = normalizeText(req.body.phone);
 
   if (isDemoMode) {
     const user = await demoStore.register({ name, email, password, phone });
@@ -47,7 +53,8 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const email = normalizeEmail(req.body.email);
+  const password = String(req.body.password || "");
 
   if (isDemoMode) {
     const user = await demoStore.login({ email, password });

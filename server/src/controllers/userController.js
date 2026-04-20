@@ -7,8 +7,27 @@ import { roles } from "../config/constants.js";
 import { demoStore } from "../services/demoStore.js";
 import { buildListFilter, buildScopeFilter, mergeFilters, scopePayloadToUser } from "../services/queryService.js";
 
+const normalizeText = (value = "") => String(value).trim();
+const normalizeEmail = (value = "") => String(value).trim().toLowerCase();
+
 const sanitizeUserPayload = (req, payload) => {
   const nextPayload = scopePayloadToUser(req, "User", payload);
+
+  if (nextPayload.email !== undefined) {
+    nextPayload.email = normalizeEmail(nextPayload.email);
+  }
+
+  if (nextPayload.name !== undefined) {
+    nextPayload.name = normalizeText(nextPayload.name);
+  }
+
+  if (nextPayload.phone !== undefined) {
+    nextPayload.phone = normalizeText(nextPayload.phone);
+  }
+
+  if (nextPayload.avatar !== undefined) {
+    nextPayload.avatar = normalizeText(nextPayload.avatar);
+  }
 
   if (req.user.role === roles.RESTAURANT_ADMIN && nextPayload.role === roles.SUPER_ADMIN) {
     throw new Error("Restaurant admins cannot create or update super admin accounts");
@@ -28,6 +47,38 @@ const hashPasswordIfPresent = async (payload) => {
   }
 
   return nextPayload;
+};
+
+const removeBlankPassword = (payload) => {
+  const nextPayload = { ...payload };
+
+  if (!String(nextPayload.password || "").trim()) {
+    delete nextPayload.password;
+  }
+
+  return nextPayload;
+};
+
+const ensurePasswordForCreate = (payload) => {
+  if (!String(payload.password || "").trim()) {
+    throw new Error("Password is required when creating a user");
+  }
+
+  return payload;
+};
+
+const findExistingUserByEmail = async (email) => {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  if (isDemoMode) {
+    return demoStore.findUserByEmail(normalizedEmail);
+  }
+
+  return User.findOne({ email: normalizedEmail });
 };
 
 export const listUsers = asyncHandler(async (req, res) => {
@@ -68,37 +119,40 @@ export const getUser = asyncHandler(async (req, res) => {
 });
 
 export const createUser = asyncHandler(async (req, res) => {
-  if (isDemoMode) {
-    const existingUser = demoStore.list("User", { ...req, query: {} }, { sort: { createdAt: -1 } }).find((entry) => entry.email === req.body.email);
-
-    if (existingUser) {
-      res.status(400);
-      throw new Error("A user with this email already exists");
-    }
-
-    const payload = sanitizeUserPayload(req, req.body);
-    const user = await demoStore.createOrUpdateUser(payload);
-    res.status(201).json(user);
-    return;
-  }
-
-  const existingUser = await User.findOne({ email: req.body.email });
+  const payload = ensurePasswordForCreate(sanitizeUserPayload(req, req.body));
+  const existingUser = await findExistingUserByEmail(payload.email);
 
   if (existingUser) {
     res.status(400);
     throw new Error("A user with this email already exists");
   }
 
-  const payload = sanitizeUserPayload(req, req.body);
+  if (isDemoMode) {
+    const user = await demoStore.createOrUpdateUser(payload);
+    res.status(201).json(user);
+    return;
+  }
+
   const user = await User.create(payload);
   const populatedUser = await User.findById(user._id).populate("restaurant");
   res.status(201).json(populatedUser);
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
+  const scope = buildScopeFilter(req, "User");
+  const sanitizedPayload = removeBlankPassword(sanitizeUserPayload(req, req.body));
+
+  if (sanitizedPayload.email) {
+    const existingUser = await findExistingUserByEmail(sanitizedPayload.email);
+
+    if (existingUser && String(existingUser._id) !== String(req.params.id)) {
+      res.status(400);
+      throw new Error("A user with this email already exists");
+    }
+  }
+
   if (isDemoMode) {
-    const payload = sanitizeUserPayload(req, req.body);
-    const user = await demoStore.createOrUpdateUser(payload, req.params.id);
+    const user = await demoStore.createOrUpdateUser(sanitizedPayload, req.params.id);
 
     if (!user) {
       res.status(404);
@@ -109,9 +163,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     return;
   }
 
-  const scope = buildScopeFilter(req, "User");
-  const basePayload = sanitizeUserPayload(req, req.body);
-  const payload = await hashPasswordIfPresent(basePayload);
+  const payload = await hashPasswordIfPresent(sanitizedPayload);
   const user = await User.findOneAndUpdate(mergeFilters({ _id: req.params.id }, scope), payload, {
     new: true,
     runValidators: true,

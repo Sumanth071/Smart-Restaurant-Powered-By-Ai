@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,17 +6,42 @@
 
 :root {
   color-scheme: light;
+  --page-bg: #fff9f4;
+  --page-bg-deep: #fff0e3;
+  --paper: #ffffff;
+  --paper-strong: #ffffff;
+  --ink: #2c1608;
+  --brand: #f47b20;
+  --brand-deep: #dc6510;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: var(--page-bg);
+}
+
 body {
-  @apply min-h-screen bg-slate-950 font-body text-slate-100 antialiased;
-  background-image: radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 24%),
-    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 20%),
-    linear-gradient(135deg, #020617 0%, #0f172a 52%, #111827 100%);
+  @apply min-h-screen font-body antialiased;
+  color: var(--ink);
+  background-color: var(--page-bg);
+  background-image: radial-gradient(circle at top left, rgba(244, 123, 32, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(255, 188, 139, 0.2), transparent 22%),
+    linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-deep) 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(244, 123, 32, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 123, 32, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black 36%, transparent 92%);
+  opacity: 0.5;
 }
 
 #root {
@@ -24,48 +49,78 @@ body {
 }
 
 ::selection {
-  background: rgba(245, 158, 11, 0.3);
-  color: #fff;
+  background: rgba(244, 123, 32, 0.22);
+  color: var(--ink);
 }
 
 .glass-card {
-  @apply rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl;
+  @apply rounded-[32px] border shadow-soft;
+  border-color: rgba(244, 123, 32, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 246, 238, 0.96));
+  backdrop-filter: blur(18px);
 }
 
 .glass-panel {
-  @apply rounded-3xl border border-slate-200/70 bg-white/85 shadow-soft backdrop-blur-xl;
+  @apply rounded-[30px] border shadow-soft;
+  border-color: rgba(244, 123, 32, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 240, 0.98));
+  backdrop-filter: blur(18px);
 }
 
 .soft-border {
-  @apply border border-white/10;
+  border: 1px solid rgba(244, 123, 32, 0.12);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #fbbf24 0%, #fb7185 50%, #38bdf8 100%);
+  background: linear-gradient(135deg, #f47b20 0%, #ff9c4a 48%, #ffb36d 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .dashboard-surface {
-  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88) 28%, rgba(240, 249, 255, 0.92)),
-    linear-gradient(135deg, rgba(249, 250, 251, 0.98), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(244, 123, 32, 0.12);
+  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.96), rgba(255, 250, 245, 0.94) 24%, rgba(255, 242, 230, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 245, 235, 0.98));
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-5 py-3 font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.01] hover:shadow-orange-500/30;
+  @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-semibold text-white transition;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+  box-shadow: 0 18px 38px rgba(244, 123, 32, 0.24);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 44px rgba(244, 123, 32, 0.3);
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-600;
+  @apply inline-flex items-center justify-center rounded-2xl border px-5 py-3 font-semibold transition;
+  border-color: rgba(244, 123, 32, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(244, 123, 32, 0.32);
+  color: var(--brand-deep);
 }
 
 .input-shell {
-  @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-4 focus:ring-amber-100;
+  @apply w-full rounded-2xl border px-4 py-3 text-sm outline-none transition placeholder:text-stone-400;
+  border-color: rgba(244, 123, 32, 0.18);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--ink);
+}
+
+.input-shell:focus {
+  border-color: rgba(244, 123, 32, 0.42);
+  box-shadow: 0 0 0 4px rgba(244, 123, 32, 0.1);
 }
 
 .grid-pattern {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(244, 123, 32, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 123, 32, 0.05) 1px, transparent 1px);
   background-size: 30px 30px;
 }

@@ -118,6 +118,43 @@ Frontend: `http://localhost:4173`
 
 Backend API: `http://localhost:5000/api`
 
+## Vercel Deployment
+
+This repo is now configured for a single Vercel project:
+
+- the React frontend is built from `client/`
+- the Express API is exposed through `api/index.js`
+- frontend routes and `/api/*` both work from the same Vercel domain
+
+### Fastest Demo Deployment
+
+Use demo mode if you want the project online quickly with the built-in sample data and no MongoDB setup.
+
+Set these Vercel environment variables:
+
+- `DEMO_MODE=true`
+- `JWT_SECRET=your-long-random-secret`
+- `JWT_EXPIRE=30d`
+- `CLIENT_URL=https://your-project-name.vercel.app`
+
+You do not need to set `VITE_API_BASE_URL` on Vercel because the frontend uses same-origin `/api` by default.
+
+### MongoDB Deployment
+
+If you want database-backed data instead of in-memory demo data, set:
+
+- `DEMO_MODE=false`
+- `MONGO_URI=your-mongodb-connection-string`
+- `JWT_SECRET=your-long-random-secret`
+- `JWT_EXPIRE=30d`
+- `CLIENT_URL=https://your-project-name.vercel.app`
+
+After deployment, test:
+
+- `/login`
+- `/dashboard`
+- `/api/health`
+
 ## Backend API Overview
 
 - `POST /api/auth/register`

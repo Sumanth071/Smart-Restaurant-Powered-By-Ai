@@ -34,8 +34,8 @@ const ReportsPage = () => {
     <div>
       <PageHeader
         eyebrow="Reports"
-        title="Reports and Analytics"
-        description="A polished reporting surface for revenue, category mix, top restaurants, and busy-hour intelligence."
+        title="Performance Reporting"
+        description="Track revenue, branch output, menu movement, and service pressure from a reporting workspace that feels operational instead of academic."
       />
 
       {error ? (
@@ -54,19 +54,19 @@ const ReportsPage = () => {
             <SectionCard title="Revenue Performance" subtitle="Seven-day revenue and order activity trend.">
               <LineSalesChart data={report.salesTrend} />
             </SectionCard>
-            <SectionCard title="Category Mix" subtitle="How the menu is distributed across key categories.">
+            <SectionCard title="Category Mix" subtitle="See where demand is landing across the menu so merchandising and prep stay aligned.">
               <DonutStatusChart data={report.categoryMix} />
             </SectionCard>
           </div>
 
           <div className="mb-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-            <SectionCard title="Busy Hour Heat" subtitle="AI-ready peak demand signal for operational planning.">
+            <SectionCard title="Busy Hour Heat" subtitle="Peak demand signals to support staffing, prep, and table turnover decisions.">
               <BusyHourChart data={report.busyHours} />
             </SectionCard>
-            <SectionCard title="Narrative Summary" subtitle="Short insights you can present during the final-year project demo.">
+            <SectionCard title="Narrative Summary" subtitle="Plain-language observations a manager can present in seconds during review.">
               <div className="space-y-4">
                 {report.narrative.map((line) => (
-                  <div key={line} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  <div key={line} className="rounded-[24px] border border-stone-200 bg-stone-50 p-4 text-sm leading-6 text-stone-600">
                     {line}
                   </div>
                 ))}
@@ -83,7 +83,7 @@ const ReportsPage = () => {
                       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Branch #{index + 1}</p>
                       <p className="mt-1 font-semibold text-slate-900">{restaurant.name}</p>
                       <p className="text-sm text-slate-500">
-                        {restaurant.bookings} bookings · Rating {restaurant.rating}
+                        {restaurant.bookings} bookings - Rating {restaurant.rating}
                       </p>
                     </div>
                     <p className="text-lg font-bold text-amber-600">INR {restaurant.revenue.toLocaleString("en-IN")}</p>
