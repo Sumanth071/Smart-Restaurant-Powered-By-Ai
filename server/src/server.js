@@ -3,7 +3,7 @@ import "./config/loadEnv.js";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8080;
 const configuredHost = process.env.HOST || "0.0.0.0";
 const fallbackHost = "0.0.0.0";
 
