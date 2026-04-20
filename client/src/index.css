@@ -1,0 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply min-h-screen bg-slate-950 font-body text-slate-100 antialiased;
+  background-image: radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 20%),
+    linear-gradient(135deg, #020617 0%, #0f172a 52%, #111827 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(245, 158, 11, 0.3);
+  color: #fff;
+}
+
+.glass-card {
+  @apply rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl;
+}
+
+.glass-panel {
+  @apply rounded-3xl border border-slate-200/70 bg-white/85 shadow-soft backdrop-blur-xl;
+}
+
+.soft-border {
+  @apply border border-white/10;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #fbbf24 0%, #fb7185 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dashboard-surface {
+  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88) 28%, rgba(240, 249, 255, 0.92)),
+    linear-gradient(135deg, rgba(249, 250, 251, 0.98), rgba(248, 250, 252, 0.96));
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-5 py-3 font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.01] hover:shadow-orange-500/30;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-amber-300 hover:text-amber-600;
+}
+
+.input-shell {
+  @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-4 focus:ring-amber-100;
+}
+
+.grid-pattern {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
+}

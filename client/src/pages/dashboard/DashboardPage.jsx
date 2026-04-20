@@ -1,0 +1,140 @@
+import { Building2, CalendarClock, IndianRupee, ShoppingBag, UsersRound } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import api from "../../api/client";
+import BusyHourChart from "../../components/charts/BusyHourChart";
+import DonutStatusChart from "../../components/charts/DonutStatusChart";
+import LineSalesChart from "../../components/charts/LineSalesChart";
+import PageHeader from "../../components/layout/PageHeader";
+import SectionCard from "../../components/ui/SectionCard";
+import StatCard from "../../components/ui/StatCard";
+import LoadingScreen from "../../components/ui/LoadingScreen";
+import StatusBadge from "../../components/ui/StatusBadge";
+import { formatCurrency, formatDate, formatTime } from "../../utils/helpers";
+
+const DashboardPage = () => {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await api.get("/dashboard/summary");
+        setData(response.data);
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || "Unable to load dashboard analytics.");
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (!data && !error) {
+    return <LoadingScreen label="Loading dashboard insights..." />;
+  }
+
+  return (
+    <div>
+      <PageHeader
+        eyebrow="Executive Dashboard"
+        title="AI-Powered Smart Restaurant Management"
+        description="A presentation-ready overview of branch health, bookings, orders, revenue, and AI-driven busy-hour signals."
+      />
+
+      {error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>
+      ) : null}
+
+      {data ? (
+        <>
+          <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <StatCard title="Revenue" value={formatCurrency(data.stats.revenue)} subtitle="Total demo order revenue" icon={IndianRupee} />
+            <StatCard title="Restaurants" value={data.stats.totalRestaurants} subtitle="Branches in this workspace" icon={Building2} />
+            <StatCard title="Orders" value={data.stats.totalOrders} subtitle="Across dine-in and takeaway" icon={ShoppingBag} />
+            <StatCard title="Occupancy" value={`${data.stats.occupancyRate}%`} subtitle="Predicted table load" icon={CalendarClock} />
+          </div>
+
+          <div className="mb-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+            <SectionCard title="Sales Trend" subtitle="Daily revenue trend over the last seven days.">
+              <LineSalesChart data={data.salesTrend} />
+            </SectionCard>
+            <SectionCard title="Order Status Mix" subtitle="Live operational distribution of order states.">
+              <DonutStatusChart data={data.orderStatusBreakdown} />
+            </SectionCard>
+          </div>
+
+          <div className="mb-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <SectionCard title="Busy Hour Analytics" subtitle="AI-ready traffic concentration built from orders, bookings, and reservations.">
+              <BusyHourChart data={data.busyHours} />
+            </SectionCard>
+            <SectionCard title="Popular Menu Items" subtitle="Top-selling dishes by order volume.">
+              <div className="space-y-4">
+                {data.popularItems.map((item, index) => (
+                  <div key={item.name} className="flex items-center justify-between rounded-2xl border border-slate-200 p-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">#{index + 1}</p>
+                      <p className="mt-1 font-semibold text-slate-900">{item.name}</p>
+                      <p className="text-sm text-slate-500">{item.orders} portions ordered</p>
+                    </div>
+                    <p className="text-sm font-semibold text-amber-600">{formatCurrency(item.revenue)}</p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+            <SectionCard title="Recent Orders" subtitle="Fresh operational activity for live demo walkthroughs.">
+              <div className="space-y-4">
+                {data.recentOrders.map((order) => (
+                  <div key={order._id} className="flex flex-col gap-3 rounded-3xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="font-semibold text-slate-900">{order.orderNumber}</p>
+                      <p className="text-sm text-slate-500">
+                        {order.customerName} at {order.restaurant?.name || "Restaurant"}
+                      </p>
+                      <p className="text-xs text-slate-400">{formatDate(order.placedAt)}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge value={order.status} />
+                      <span className="font-semibold text-slate-900">{formatCurrency(order.totalAmount)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Recent Bookings" subtitle="Upcoming guest arrivals and booking pipeline.">
+              <div className="space-y-4">
+                {data.recentBookings.map((booking) => (
+                  <div key={booking._id} className="rounded-3xl border border-slate-200 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{booking.guestName}</p>
+                        <p className="text-sm text-slate-500">{booking.restaurant?.name || "Restaurant"}</p>
+                      </div>
+                      <StatusBadge value={booking.status} />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-500">
+                      {formatDate(booking.bookingDate)} at {formatTime(booking.timeSlot)} for {booking.guestCount} guests
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+
+          <SectionCard title="Team Snapshot" subtitle="Quick overview of user and branch scale for project presentation." className="mt-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <StatCard title="Total Users" value={data.stats.totalUsers} subtitle="Across all roles" icon={UsersRound} />
+              <StatCard title="Total Tables" value={data.stats.totalTables} subtitle="Mapped into service zones" icon={CalendarClock} />
+              <StatCard title="Menu Items" value={data.stats.totalMenuItems} subtitle="Active dishes managed" icon={ShoppingBag} />
+            </div>
+          </SectionCard>
+        </>
+      ) : null}
+    </div>
+  );
+};
+
+export default DashboardPage;

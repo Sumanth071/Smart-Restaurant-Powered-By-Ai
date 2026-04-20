@@ -1,0 +1,46 @@
+export const restaurantSeed = [
+  {
+    name: "Urban Bites",
+    code: "URBAN-01",
+    email: "admin@urbanbites.com",
+    phone: "+91 98765 41001",
+    description: "A vibrant smart-casual dining branch built for quick family meals and premium college demo presentations.",
+    heroImage:
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+    cuisineTypes: ["Indian", "Continental", "Cafe"],
+    openingHours: "10:00 AM - 11:00 PM",
+    status: "active",
+    totalTables: 18,
+    totalStaff: 14,
+    rating: 4.7,
+    address: {
+      line: "21 Tech Park Road",
+      city: "Bengaluru",
+      state: "Karnataka",
+      country: "India",
+      pincode: "560068",
+    },
+  },
+  {
+    name: "Coastal Spice",
+    code: "COAST-02",
+    email: "admin@coastalspice.com",
+    phone: "+91 98765 41002",
+    description: "A premium seafood and grill concept with strong dine-in demand and polished multi-branch management workflows.",
+    heroImage:
+      "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=80",
+    cuisineTypes: ["Seafood", "South Indian", "Grill"],
+    openingHours: "11:00 AM - 11:30 PM",
+    status: "active",
+    totalTables: 12,
+    totalStaff: 10,
+    rating: 4.6,
+    address: {
+      line: "88 Marina View",
+      city: "Mangaluru",
+      state: "Karnataka",
+      country: "India",
+      pincode: "575001",
+    },
+  },
+];
