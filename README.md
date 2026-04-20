@@ -1,21 +1,75 @@
-# AI-Powered Smart Restaurant Management System
+# Smart Restaurant Powered By AI
 
-A complete MERN stack final year project with modern UI, dummy demo data, role-based access, CRUD modules, and AI-powered restaurant features.
+A full-stack restaurant operations web product built with the MERN stack. It combines branch management, menu control, reservations, food ordering, reports, and AI-assisted workflows in one polished multi-role platform.
+
+## Live Demo
+
+- Production app: [https://smart-restaurant-powered-by-ai.vercel.app](https://smart-restaurant-powered-by-ai.vercel.app)
+- API health check: [https://smart-restaurant-powered-by-ai.vercel.app/api/health](https://smart-restaurant-powered-by-ai.vercel.app/api/health)
+
+## Demo Accounts
+
+- Super Admin: `superadmin@smartdine.ai` / `password123`
+- Restaurant Admin: `admin@urbanbites.com` / `password123`
+- Staff: `staff@urbanbites.com` / `password123`
+- Guest User: `guest@example.com` / `password123`
+
+## What This Product Includes
+
+- Role-based authentication with JWT
+- Super Admin, Restaurant Admin, Staff, and Guest experiences
+- Dashboard with operational KPIs and analytics
+- Restaurant, menu, table, booking, order, reservation, and user CRUD
+- Guest-facing booking and ordering pages
+- AI food recommendations
+- AI customer support assistant
+- Busy-hour and sales insight modules
+- MongoDB seed data for a ready-to-demo setup
+- Vercel-ready frontend and API deployment setup
 
 ## Tech Stack
 
-- React + Vite + Tailwind CSS
-- Node.js + Express
-- MongoDB + Mongoose
-- JWT Authentication
-- Recharts for analytics dashboards
+- React
+- Vite
+- Tailwind CSS
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JWT
 
-## Roles
+## Project Structure
 
-- Super Admin
-- Restaurant Admin
-- Staff
-- Guest User
+```text
+smart-restaurant-powered-by-ai/
+|-- api/
+|   `-- index.js
+|-- client/
+|   |-- src/
+|   |   |-- api/
+|   |   |-- components/
+|   |   |-- context/
+|   |   |-- data/
+|   |   |-- pages/
+|   |   `-- utils/
+|   |-- .env.example
+|   `-- package.json
+|-- server/
+|   |-- src/
+|   |   |-- config/
+|   |   |-- controllers/
+|   |   |-- middleware/
+|   |   |-- models/
+|   |   |-- routes/
+|   |   |-- seed/
+|   |   `-- services/
+|   |-- .env.example
+|   `-- package.json
+|-- docker-compose.yml
+|-- package.json
+|-- vercel.json
+`-- README.md
+```
 
 ## Main Modules
 
@@ -32,50 +86,12 @@ A complete MERN stack final year project with modern UI, dummy demo data, role-b
 ## AI Modules
 
 - Food Recommendation System
-- Customer Support Chatbot
-- Sales and Busy Hour Analytics
-
-## Project Structure
-
-```text
-ai-powered-smart-restaurant-management-system/
-├── client/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── data/
-│   │   ├── pages/
-│   │   └── utils/
-│   ├── Dockerfile
-│   └── package.json
-├── server/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── seed/
-│   │   └── services/
-│   ├── Dockerfile
-│   └── package.json
-├── docker-compose.yml
-└── package.json
-```
-
-## Demo Credentials
-
-- Super Admin: `superadmin@smartdine.ai` / `password123`
-- Restaurant Admin: `admin@urbanbites.com` / `password123`
-- Staff: `staff@urbanbites.com` / `password123`
-- Guest User: `guest@example.com` / `password123`
+- Customer Support Assistant
+- Sales and Busy-Hour Insights
 
 ## Local Setup
 
-1. Copy `server/.env.example` to `server/.env`
-2. Copy `client/.env.example` to `client/.env`
-3. Install dependencies:
+### 1. Install dependencies
 
 ```bash
 npm install
@@ -83,83 +99,60 @@ npm install --prefix server
 npm install --prefix client
 ```
 
-4. Start MongoDB locally
-5. Seed the database:
+### 2. Configure environment files
+
+Create these files from the provided examples:
+
+- `server/.env`
+- `client/.env`
+
+Default local examples already point to:
+
+- Frontend: `http://127.0.0.1:5173`
+- Backend API: `http://127.0.0.1:5050/api`
+- MongoDB: `mongodb://127.0.0.1:27017/ai-smart-restaurant`
+
+### 3. Seed data
 
 ```bash
 npm run seed
 ```
 
-6. Run the full project:
+### 4. Start the app
 
 ```bash
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
+Local URLs:
 
-Backend API: `http://localhost:5000/api`
+- Frontend: `http://127.0.0.1:5173`
+- Backend API: `http://127.0.0.1:5050/api`
 
-## Docker Setup
+## Production Notes
 
-1. Build and start services:
+The current production deployment is hosted on Vercel and connected to MongoDB Atlas.
 
-```bash
-docker compose up --build
-```
-
-2. Seed the database:
-
-```bash
-docker compose exec server npm run seed
-```
-
-Frontend: `http://localhost:4173`
-
-Backend API: `http://localhost:5000/api`
-
-## Vercel Deployment
-
-This repo is now configured for a single Vercel project:
-
-- the React frontend is built from `client/`
-- the Express API is exposed through `api/index.js`
-- frontend routes and `/api/*` both work from the same Vercel domain
-
-### Fastest Demo Deployment
-
-Use demo mode if you want the project online quickly with the built-in sample data and no MongoDB setup.
-
-Set these Vercel environment variables:
-
-- `DEMO_MODE=true`
-- `JWT_SECRET=your-long-random-secret`
-- `JWT_EXPIRE=30d`
-- `CLIENT_URL=https://your-project-name.vercel.app`
-
-You do not need to set `VITE_API_BASE_URL` on Vercel because the frontend uses same-origin `/api` by default.
-
-### MongoDB Deployment
-
-If you want database-backed data instead of in-memory demo data, set:
+Required environment variables for deployment:
 
 - `DEMO_MODE=false`
-- `MONGO_URI=your-mongodb-connection-string`
-- `JWT_SECRET=your-long-random-secret`
+- `MONGO_URI=your-mongodb-uri`
+- `JWT_SECRET=your-secure-secret`
 - `JWT_EXPIRE=30d`
-- `CLIENT_URL=https://your-project-name.vercel.app`
+- `CLIENT_URL=https://your-vercel-domain.vercel.app`
 
-After deployment, test:
+The frontend uses same-origin `/api` routes in production, so `VITE_API_BASE_URL` is not required on Vercel.
 
-- `/login`
-- `/dashboard`
-- `/api/health`
-
-## Backend API Overview
+## API Overview
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `GET /api/dashboard/summary`
+- `GET /api/reports/overview`
+- `GET /api/ai/insights`
+- `POST /api/ai/recommendations`
+- `POST /api/ai/chatbot`
 - `GET/POST/PUT/DELETE /api/restaurants`
 - `GET/POST/PUT/DELETE /api/menu-items`
 - `GET/POST/PUT/DELETE /api/tables`
@@ -167,16 +160,40 @@ After deployment, test:
 - `GET/POST/PUT/DELETE /api/orders`
 - `GET/POST/PUT/DELETE /api/reservations`
 - `GET/POST/PUT/DELETE /api/users`
-- `GET /api/dashboard/summary`
-- `GET /api/reports/overview`
-- `GET /api/ai/insights`
-- `POST /api/ai/recommendations`
-- `POST /api/ai/chatbot`
 
-## Submission Notes
+## Deployment
 
-- Suitable for final year project demo and viva
-- Contains dummy seeded data for instant presentation
-- Includes responsive multi-page UI
-- Covers CRUD for key restaurant management modules
-- Includes clean dashboard visuals and AI demo features
+### Vercel
+
+This repo is configured so:
+
+- `client/` builds the frontend
+- `api/index.js` exposes the Express API as serverless routes
+- frontend routes and `/api/*` work from the same domain
+
+Deploy command used for production:
+
+```bash
+npx vercel deploy --prod
+```
+
+### Docker
+
+```bash
+docker compose up --build
+```
+
+Then seed data:
+
+```bash
+docker compose exec server npm run seed
+```
+
+## Presentation-Friendly Highlights
+
+- Clean orange-and-white premium UI
+- Real multi-page product flow for guests and admins
+- Ready-to-use seeded data
+- AI features that are easy to demonstrate live
+- JWT session validity set to 30 days
+- Suitable for demo, submission, and portfolio presentation

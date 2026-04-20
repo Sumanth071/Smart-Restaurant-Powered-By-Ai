@@ -248,7 +248,7 @@ const initStore = () => {
       code: "URBAN-01",
       email: "admin@urbanbites.com",
       phone: "+91 98765 41001",
-      description: "A vibrant smart-casual dining branch built for quick family meals and premium college demo presentations.",
+      description: "A vibrant smart-casual dining branch built for quick family meals, city dining, and high-volume service.",
       heroImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
       cuisineTypes: ["Indian", "Continental", "Cafe"],
       openingHours: "10:00 AM - 11:00 PM",
@@ -1326,7 +1326,7 @@ const getReportsOverview = (req) => {
 
   return {
     cards: [
-      { title: "Revenue", value: `INR ${revenue.toLocaleString("en-IN")}`, subtitle: "Across all demo orders" },
+      { title: "Revenue", value: `INR ${revenue.toLocaleString("en-IN")}`, subtitle: "Across all recorded orders" },
       { title: "Occupancy", value: `${occupancyRate}%`, subtitle: "Based on bookings and reservations" },
       { title: "Restaurants", value: restaurants.length, subtitle: "Active branches in the system" },
       { title: "Menu Coverage", value: menuItems.length, subtitle: "Total menu items tracked" },
@@ -1343,10 +1343,10 @@ const getReportsOverview = (req) => {
     topItems,
     narrative: [
       `Total tracked revenue is INR ${revenue.toLocaleString("en-IN")} with an average occupancy of ${occupancyRate}%.`,
-      "Peak operational pressure is visible in evening dining windows, which is a good slot to demonstrate staff planning.",
+      "Peak operational pressure is visible in evening dining windows, which is a strong slot for tighter staff planning.",
       topItems[0]
         ? `${topItems[0].name} is the strongest seller right now, making it a strong candidate for promotional highlighting.`
-        : "Menu demand is distributed fairly evenly in the current demo data.",
+        : "Menu demand is distributed fairly evenly in the current operating data.",
     ],
   };
 };
@@ -1361,14 +1361,14 @@ const getAIInsights = (req) => {
   return {
     busyHours,
     insights: [
-      { title: "Peak Service Window", detail: peakHour ? `${peakHour.label} drives the highest combined traffic in this demo dataset.` : "Traffic is evenly spread." },
+      { title: "Peak Service Window", detail: peakHour ? `${peakHour.label} drives the highest combined traffic in the current operating dataset.` : "Traffic is evenly spread." },
       { title: "Opportunity Slot", detail: lowHour ? `${lowHour.label} is a good candidate for happy-hour or combo offers.` : "Every slot already shows healthy demand." },
       { title: "Best-Selling Dishes", detail: topItems.length ? `${topItems.map((item) => item.name).join(", ")} are currently leading order volume.` : "No dominant dish detected yet." },
     ],
     suggestions: [
       "Assign one extra staff member during the highest traffic window for smoother table turnover.",
       "Push promotional offers during low-traffic periods to improve average order value.",
-      "Highlight top-selling dishes in the guest ordering portal to lift conversions during demos.",
+      "Highlight top-selling dishes in the guest ordering portal to lift conversions during peak service hours.",
     ],
   };
 };
@@ -1408,11 +1408,11 @@ const chatbotReply = (message = "") => {
   }
 
   if (text.includes("menu") || text.includes("food")) {
-    return "The Order Online page shows the demo menu. You can filter dishes by restaurant and place a sample order in a few clicks.";
+    return "The Order Online page shows the live menu. You can filter dishes by restaurant and place an order in a few clicks.";
   }
 
   if (text.includes("timing") || text.includes("open")) {
-    return "Most demo branches are configured from 10:00 AM to 11:00 PM. Each restaurant card shows its exact operating hours.";
+    return "Most branches are configured from 10:00 AM to 11:00 PM. Each restaurant card shows its exact operating hours.";
   }
 
   if (text.includes("recommend")) {

@@ -4,7 +4,7 @@ export const restaurantSeed = [
     code: "URBAN-01",
     email: "admin@urbanbites.com",
     phone: "+91 98765 41001",
-    description: "A vibrant smart-casual dining branch built for quick family meals and premium college demo presentations.",
+    description: "A vibrant smart-casual dining branch built for quick family meals, city dining, and high-volume service.",
     heroImage:
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
     cuisineTypes: ["Indian", "Continental", "Cafe"],

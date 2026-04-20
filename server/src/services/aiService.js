@@ -53,11 +53,11 @@ export const generateChatbotReply = (message = "") => {
   }
 
   if (normalizedMessage.includes("menu") || normalizedMessage.includes("food")) {
-    return "The Order Online page shows the demo menu. You can filter dishes by restaurant and place a sample order with just a few clicks.";
+    return "The Order Online page shows the full live menu. You can filter dishes by restaurant and place an order in just a few clicks.";
   }
 
   if (normalizedMessage.includes("timing") || normalizedMessage.includes("open")) {
-    return "Most demo branches are configured from 10:00 AM to 11:00 PM. Exact timings are shown on each restaurant card.";
+    return "Most branches operate from 10:00 AM to 11:00 PM. Exact timings are shown on each restaurant card.";
   }
 
   if (normalizedMessage.includes("recommend")) {

@@ -36,9 +36,9 @@ const DashboardPage = () => {
   return (
     <div>
       <PageHeader
-        eyebrow="Executive Dashboard"
-        title="AI-Powered Smart Restaurant Management"
-        description="A presentation-ready overview of branch health, bookings, orders, revenue, and AI-driven busy-hour signals."
+        eyebrow="Operations"
+        title="Operations Overview"
+        description="A clear view of branch health, bookings, orders, revenue, and service pressure across the platform."
       />
 
       {error ? (
@@ -48,7 +48,7 @@ const DashboardPage = () => {
       {data ? (
         <>
           <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard title="Revenue" value={formatCurrency(data.stats.revenue)} subtitle="Total demo order revenue" icon={IndianRupee} />
+            <StatCard title="Revenue" value={formatCurrency(data.stats.revenue)} subtitle="Current recorded revenue" icon={IndianRupee} />
             <StatCard title="Restaurants" value={data.stats.totalRestaurants} subtitle="Branches in this workspace" icon={Building2} />
             <StatCard title="Orders" value={data.stats.totalOrders} subtitle="Across dine-in and takeaway" icon={ShoppingBag} />
             <StatCard title="Occupancy" value={`${data.stats.occupancyRate}%`} subtitle="Predicted table load" icon={CalendarClock} />
@@ -64,7 +64,7 @@ const DashboardPage = () => {
           </div>
 
           <div className="mb-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-            <SectionCard title="Busy Hour Analytics" subtitle="AI-ready traffic concentration built from orders, bookings, and reservations.">
+            <SectionCard title="Busy Hour Analytics" subtitle="Traffic concentration built from orders, bookings, and reservations.">
               <BusyHourChart data={data.busyHours} />
             </SectionCard>
             <SectionCard title="Popular Menu Items" subtitle="Top-selling dishes by order volume.">
@@ -84,7 +84,7 @@ const DashboardPage = () => {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-            <SectionCard title="Recent Orders" subtitle="Fresh operational activity for live demo walkthroughs.">
+            <SectionCard title="Recent Orders" subtitle="Fresh operational activity from the service floor.">
               <div className="space-y-4">
                 {data.recentOrders.map((order) => (
                   <div key={order._id} className="flex flex-col gap-3 rounded-3xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
@@ -124,7 +124,7 @@ const DashboardPage = () => {
             </SectionCard>
           </div>
 
-          <SectionCard title="Team Snapshot" subtitle="Quick overview of user and branch scale for project presentation." className="mt-6">
+          <SectionCard title="Team Snapshot" subtitle="Quick overview of user, table, and branch scale." className="mt-6">
             <div className="grid gap-4 md:grid-cols-3">
               <StatCard title="Total Users" value={data.stats.totalUsers} subtitle="Across all roles" icon={UsersRound} />
               <StatCard title="Total Tables" value={data.stats.totalTables} subtitle="Mapped into service zones" icon={CalendarClock} />

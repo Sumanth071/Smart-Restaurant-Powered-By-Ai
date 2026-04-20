@@ -98,7 +98,7 @@ const GuestOrderPage = () => {
         notes: "Created from guest ordering page",
       });
 
-      setMessage("Order placed successfully. Demo order is now visible in the admin order module.");
+      setMessage("Order placed successfully. It is now visible in the orders workspace.");
       setCart([]);
       setOrderForm(getOrderDefaults(user));
     } catch (requestError) {
@@ -110,15 +110,15 @@ const GuestOrderPage = () => {
     <section className="px-6 py-12 md:px-10 md:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 text-center">
-          <div className="mb-4 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-300">
+          <div className="mb-4 inline-flex rounded-full border border-brand-100 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-600 shadow-sm">
             Online Ordering
           </div>
-          <h1 className="font-display text-4xl font-bold text-white md:text-5xl">Order Food from the Smart Guest Portal</h1>
-          <p className="mx-auto mt-4 max-w-3xl text-slate-300">
-            A modern multi-page food ordering flow with dish cards, quantity controls, and admin-linked order creation.
+          <h1 className="font-display text-4xl font-bold text-stone-900 md:text-5xl">Order Food from the Guest Portal</h1>
+          <p className="mx-auto mt-4 max-w-3xl text-stone-600">
+            A clear ordering flow with strong dish cards, quantity controls, and direct integration with restaurant operations.
           </p>
           {user?.role === "guest" ? (
-            <Link to="/my-activity" className="mt-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
+            <Link to="/my-activity" className="mt-5 inline-flex rounded-full border border-brand-100 bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm">
               Manage My Orders
             </Link>
           ) : null}
@@ -138,7 +138,7 @@ const GuestOrderPage = () => {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-          <SectionCard title="Menu Catalogue" subtitle="Browse demo dishes and build the cart with a polished UI.">
+          <SectionCard title="Menu Catalogue" subtitle="Browse dishes and build the cart with a clean guest ordering flow.">
             <div className="grid gap-5 md:grid-cols-2">
               {filteredMenu.map((item) => (
                 <article key={item._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
@@ -168,9 +168,9 @@ const GuestOrderPage = () => {
 
           <SectionCard
             title="Your Cart"
-            subtitle="A compact order summary that submits directly to the backend order module."
+            subtitle="Review order details before sending them to the operations team."
             action={
-              <div className="rounded-2xl bg-amber-50 p-3 text-amber-600">
+              <div className="rounded-2xl bg-brand-50 p-3 text-brand-700">
                 <ShoppingBag className="h-5 w-5" />
               </div>
             }
@@ -196,8 +196,8 @@ const GuestOrderPage = () => {
                 </div>
               ))}
 
-              <div className="rounded-3xl bg-slate-950 p-5 text-white">
-                <p className="text-sm text-slate-400">Cart Total</p>
+              <div className="rounded-3xl bg-gradient-to-br from-brand-500 to-brand-700 p-5 text-white">
+                <p className="text-sm text-orange-100">Cart Total</p>
                 <h3 className="mt-2 text-3xl font-bold">{formatCurrency(cartTotal)}</h3>
               </div>
 

@@ -98,7 +98,7 @@ const GuestBookingPage = () => {
 
     try {
       await api.post("/bookings", { ...bookingForm, status: "pending", source: "web", guestCount: Number(bookingForm.guestCount) });
-      setMessage("Table booking submitted successfully. Demo entry created in the booking module.");
+      setMessage("Table booking submitted successfully. It is now visible in the bookings workspace.");
       setBookingForm(getBookingDefaults(user));
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to submit booking.");
@@ -116,7 +116,7 @@ const GuestBookingPage = () => {
         status: "pending",
         guestCount: Number(reservationForm.guestCount),
       });
-      setMessage("Reservation submitted successfully. Demo entry created in the reservation module.");
+      setMessage("Reservation submitted successfully. It is now visible in the reservations workspace.");
       setReservationForm(getReservationDefaults(user));
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to submit reservation.");
@@ -127,15 +127,15 @@ const GuestBookingPage = () => {
     <section className="px-6 py-12 md:px-10 md:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 text-center">
-          <div className="mb-4 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-300">
+          <div className="mb-4 inline-flex rounded-full border border-brand-100 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-600 shadow-sm">
             Booking Module
           </div>
-          <h1 className="font-display text-4xl font-bold text-white md:text-5xl">Book Tables and Manage Reservations</h1>
-          <p className="mx-auto mt-4 max-w-3xl text-slate-300">
+          <h1 className="font-display text-4xl font-bold text-stone-900 md:text-5xl">Book Tables and Manage Reservations</h1>
+          <p className="mx-auto mt-4 max-w-3xl text-stone-600">
             A clean, responsive guest-facing booking flow connected to the admin booking and reservation dashboards.
           </p>
           {user?.role === "guest" ? (
-            <Link to="/my-activity" className="mt-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
+            <Link to="/my-activity" className="mt-5 inline-flex rounded-full border border-brand-100 bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm">
               Manage My Bookings and Reservations
             </Link>
           ) : null}
@@ -149,7 +149,7 @@ const GuestBookingPage = () => {
             title="Table Booking"
             subtitle="Choose a restaurant, date, and table for a guest booking entry."
             action={
-              <div className="rounded-2xl bg-amber-50 p-3 text-amber-600">
+              <div className="rounded-2xl bg-brand-50 p-3 text-brand-700">
                 <CalendarCheck2 className="h-5 w-5" />
               </div>
             }
@@ -195,7 +195,7 @@ const GuestBookingPage = () => {
             title="Advance Reservation"
             subtitle="Capture future reservations and area preferences for the reservation management module."
             action={
-              <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-600">
+              <div className="rounded-2xl bg-brand-50 p-3 text-brand-700">
                 <Clock4 className="h-5 w-5" />
               </div>
             }

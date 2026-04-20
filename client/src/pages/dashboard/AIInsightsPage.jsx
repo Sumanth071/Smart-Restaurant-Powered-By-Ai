@@ -101,7 +101,7 @@ const AIInsightsPage = () => {
       <PageHeader
         eyebrow="AI Modules"
         title="Service Intelligence"
-        description="Use recommendation logic, guest support replies, and busy-hour analysis in a way that feels useful to a real restaurant team."
+        description="Recommendation support, guest assistance, and busy-hour signals packaged for real restaurant operations."
       />
 
       {error ? (
@@ -117,13 +117,13 @@ const AIInsightsPage = () => {
       {insights ? (
         <>
           <div className="mb-6 grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-            <SectionCard title="Busy Hour Intelligence" subtitle="Peak demand trends generated from live operational activity across tables and orders.">
+            <SectionCard title="Busy Hour Intelligence" subtitle="Peak demand trends generated from orders, bookings, and table activity.">
               <BusyHourChart data={insights.busyHours} />
             </SectionCard>
-            <SectionCard title="Operations Brief" subtitle="Short takeaways a manager can use before the next shift begins.">
+            <SectionCard title="Operations Brief" subtitle="Short takeaways managers can use before the next shift begins.">
               <div className="space-y-4">
                 {insights.insights.map((item) => (
-                  <div key={item.title} className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
+                  <div key={item.title} className="rounded-3xl border border-brand-100 bg-gradient-to-br from-white to-[#fff7ef] p-4">
                     <p className="text-sm font-semibold text-slate-900">{item.title}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
                   </div>
@@ -133,7 +133,7 @@ const AIInsightsPage = () => {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <SectionCard title="Food Recommendation Desk" subtitle="Suggest dishes using guest preferences, budget, and spice profile without making the experience feel robotic.">
+            <SectionCard title="Food Recommendation Desk" subtitle="Suggest dishes using guest preferences, budget, and spice profile in a natural way.">
               <form onSubmit={handleRecommendationSubmit} className="grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-slate-700">Restaurant</span>
@@ -186,14 +186,14 @@ const AIInsightsPage = () => {
                     <option value="Hot">Hot</option>
                   </select>
                 </label>
-                <label className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 md:col-span-2">
+                <label className="flex items-center justify-between rounded-2xl border border-brand-100 bg-[#fff8f1] px-4 py-3 md:col-span-2">
                   <span className="text-sm font-medium text-slate-700">Vegetarian only</span>
                   <input
                     name="isVeg"
                     type="checkbox"
                     checked={recommendationForm.isVeg}
                     onChange={handleRecommendationChange}
-                    className="h-5 w-5 rounded border-slate-300 text-amber-500 focus:ring-amber-300"
+                    className="h-5 w-5 rounded border-slate-300 text-brand-500 focus:ring-brand-300"
                   />
                 </label>
                 <button type="submit" className="btn-primary md:col-span-2">
@@ -203,7 +203,7 @@ const AIInsightsPage = () => {
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 {recommendationResult.map((item) => (
-                  <div key={item._id} className="overflow-hidden rounded-3xl border border-slate-200">
+                  <div key={item._id} className="overflow-hidden rounded-3xl border border-brand-100 bg-white">
                     <img src={item.image} alt={item.name} className="h-40 w-full object-cover" />
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -214,7 +214,7 @@ const AIInsightsPage = () => {
                         <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">{item.spiceLevel}</span>
                       </div>
                       <p className="mt-3 text-sm text-slate-600">{item.reason}</p>
-                      <p className="mt-3 font-semibold text-amber-600">{formatCurrency(item.price)}</p>
+                      <p className="mt-3 font-semibold text-brand-700">{formatCurrency(item.price)}</p>
                     </div>
                   </div>
                 ))}
@@ -226,12 +226,14 @@ const AIInsightsPage = () => {
                 <MessageSquare className="h-4 w-4 text-brand-700" />
                 Replies stay friendly and short so the conversation feels like staff support, not a generic bot dump.
               </div>
-              <div className="mb-4 space-y-3 rounded-3xl bg-stone-950 p-4">
+              <div className="mb-4 space-y-3 rounded-3xl border border-brand-100 bg-gradient-to-b from-[#fff8f1] to-white p-4">
                 {messages.map((message, index) => (
                   <div key={`${message.from}-${index}`} className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}>
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                        message.from === "user" ? "bg-brand-600 text-white" : "bg-white/10 text-stone-100"
+                        message.from === "user"
+                          ? "bg-brand-600 text-white shadow-lg shadow-brand-700/15"
+                          : "border border-brand-100 bg-white text-stone-700"
                       }`}
                     >
                       {message.text}
@@ -253,7 +255,7 @@ const AIInsightsPage = () => {
 
               <div className="mt-6 space-y-3">
                 {insights.suggestions.map((suggestion) => (
-                  <div key={suggestion} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  <div key={suggestion} className="rounded-2xl border border-brand-100 bg-[#fff8f1] p-4 text-sm text-slate-600">
                     {suggestion}
                   </div>
                 ))}

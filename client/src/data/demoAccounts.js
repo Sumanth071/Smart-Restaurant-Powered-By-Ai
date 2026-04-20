@@ -21,6 +21,6 @@ export const demoAccounts = [
     role: "Guest User",
     email: "guest@example.com",
     password: "password123",
-    note: "Can log in for demo purposes or simply use the public guest portal.",
+    note: "Can log in directly or simply use the public guest portal.",
   },
 ];

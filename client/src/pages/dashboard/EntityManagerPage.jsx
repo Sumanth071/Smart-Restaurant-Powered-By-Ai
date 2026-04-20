@@ -166,8 +166,8 @@ const EntityManagerPage = ({ config }) => {
       ) : null}
 
       <SectionCard
-        title="Live Data Table"
-        subtitle="Use search, edit, and delete actions to demonstrate full CRUD operations."
+        title="Current Records"
+        subtitle="Search, review, update, and remove records from one workspace."
         action={
           <input
             type="search"
@@ -192,7 +192,7 @@ const EntityManagerPage = ({ config }) => {
         open={modalOpen}
         onClose={closeModal}
         title={selectedItem ? `Edit ${config.buttonLabel.replace("Add ", "")}` : config.buttonLabel}
-        subtitle="Update the form and save to apply changes to the database."
+        subtitle="Update the form and save to apply changes to the workspace."
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">

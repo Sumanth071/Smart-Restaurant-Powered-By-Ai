@@ -38,7 +38,7 @@ export const moduleConfigs = {
     buttonLabel: "Add Restaurant",
     searchPlaceholder: "Search branches by name, code, or city",
     emptyTitle: "No restaurants yet",
-    emptyDescription: "Add your first demo branch to start populating menus, tables, and bookings.",
+    emptyDescription: "Add your first branch to start populating menus, tables, and bookings.",
     columns: [
       {
         key: "name",
@@ -126,13 +126,13 @@ export const moduleConfigs = {
       {
         title: "Average Rating",
         value: items.length ? (items.reduce((sum, item) => sum + Number(item.rating || 0), 0) / items.length).toFixed(1) : "0.0",
-        subtitle: "Across all demo restaurants",
+        subtitle: "Across all active branches",
       },
     ],
   },
   menu: {
     title: "Menu Management",
-    subtitle: "Maintain dish catalogues, pricing, availability, and presentation-ready food cards.",
+    subtitle: "Maintain dish catalogues, pricing, availability, and polished food cards.",
     endpoint: "/menu-items",
     buttonLabel: "Add Menu Item",
     searchPlaceholder: "Search dishes, categories, or descriptions",
@@ -467,7 +467,7 @@ export const moduleConfigs = {
     buttonLabel: "Add User",
     searchPlaceholder: "Search users by name, email, or role",
     emptyTitle: "No users available",
-    emptyDescription: "Create operator accounts to complete the multi-role software demo.",
+    emptyDescription: "Create operator accounts to complete the multi-role platform setup.",
     dependencies: [{ key: "restaurants", endpoint: "/restaurants" }],
     columns: [
       {

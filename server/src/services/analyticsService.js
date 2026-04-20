@@ -184,7 +184,7 @@ const buildInsightsNarrative = ({ revenue, occupancyRate, busyHours, topItem }) 
     `Total tracked revenue is INR ${revenue.toLocaleString("en-IN")} with an average occupancy of ${occupancyRate}%.`,
     peakHour
       ? `Peak operational pressure appears around ${peakHour.label}, which is the ideal window to keep extra staff on the floor.`
-      : "Guest flow is distributed evenly through the day in the current demo dataset.",
+      : "Guest flow is distributed evenly through the day in the current operating dataset.",
     topItem
       ? `${topItem.name} is the strongest seller right now, making it a good candidate for combo offers and hero placement.`
       : "No dominant best-seller is visible yet, so cross-selling experiments are still open.",
@@ -236,7 +236,7 @@ export const buildReportsOverview = async (req) => {
 
   return {
     cards: [
-      { title: "Revenue", value: `INR ${revenue.toLocaleString("en-IN")}`, subtitle: "Across all demo orders" },
+      { title: "Revenue", value: `INR ${revenue.toLocaleString("en-IN")}`, subtitle: "Across all recorded orders" },
       { title: "Occupancy", value: `${occupancyRate}%`, subtitle: "Based on bookings and reservations" },
       { title: "Restaurants", value: restaurants.length, subtitle: "Active branches in the system" },
       { title: "Menu Coverage", value: menuItems.length, subtitle: "Total menu items tracked" },
@@ -268,7 +268,7 @@ export const buildAIInsights = async (req) => {
       {
         title: "Peak Service Window",
         detail: peakHour
-          ? `${peakHour.label} drives the highest mix of orders, bookings, and reservations in this demo dataset.`
+          ? `${peakHour.label} drives the highest mix of orders, bookings, and reservations in the current operating dataset.`
           : "Traffic is spread evenly with no strong peak hour detected.",
       },
       {
@@ -287,7 +287,7 @@ export const buildAIInsights = async (req) => {
     suggestions: [
       "Assign one additional staff member during the peak hour window to reduce table turnover delays.",
       "Push promotional banners or combo pricing during low-traffic windows to improve average order value.",
-      "Highlight top-selling dishes in the guest ordering page to lift conversions during demo presentations.",
+      "Highlight top-selling dishes in the guest ordering page to lift conversions during active service periods.",
     ],
   };
 };

@@ -31,24 +31,25 @@ const GuestHomePage = () => {
     () => [
       { label: "Active branches", value: restaurants.length || "--", note: "Locations available for bookings and orders" },
       { label: "Menu items", value: menuItems.length || "--", note: "Curated dishes surfaced for the public journey" },
-      { label: "AI picks", value: recommendations.length || "--", note: "Personalized dishes suggested from live demo data" },
+      { label: "AI picks", value: recommendations.length || "--", note: "Personalized dishes suggested from live operating data" },
     ],
     [menuItems.length, recommendations.length, restaurants.length]
   );
 
   return (
-    <div>
-      <section className="px-6 py-12 md:px-10 md:py-20">
+    <div className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top_left,rgba(244,123,32,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,214,181,0.36),transparent_24%)]" />
+      <section className="relative px-6 py-12 md:px-10 md:py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-10 xl:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <div className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-200">
+            <div className="mb-5 inline-flex rounded-full border border-brand-100 bg-white/92 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-600 shadow-sm">
               Hospitality Operating System
             </div>
-            <h1 className="font-display text-5xl font-bold leading-tight text-white md:text-6xl">
-              Designed for guests out front and service teams behind the scenes
+            <h1 className="max-w-4xl font-display text-5xl font-bold leading-[0.96] text-stone-900 md:text-7xl">
+              Premium restaurant operations with a guest experience to match
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-300">
-              Smart Dine brings together bookings, ordering, menu control, service support, and decision-ready analytics in one restaurant platform that feels polished enough for a real launch.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
+              Smart Dine brings together reservations, ordering, menu control, guest assistance, and analytics in one refined digital product built for modern restaurant brands.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link to="/book-table" className="btn-primary">
@@ -60,47 +61,52 @@ const GuestHomePage = () => {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
-                { icon: Table2, title: "Guest reservations", note: "Guests can reserve tables, manage requests, and follow booking status without calling the branch." },
-                { icon: UtensilsCrossed, title: "Digital ordering", note: "Menu browsing and food ordering stay connected to branch availability and service operations." },
-                { icon: Bot, title: "Decision support", note: "Recommendations, chatbot assistance, and peak-hour insights help teams move faster during service." },
+                { icon: Table2, title: "Guest reservations", note: "Guests reserve tables, manage requests, and follow status without calling the branch." },
+                { icon: UtensilsCrossed, title: "Digital ordering", note: "Menu browsing and food ordering stay connected to branch availability." },
+                { icon: Bot, title: "Decision support", note: "Recommendations, chatbot assistance, and peak-hour insights help teams move faster." },
               ].map((feature) => (
-                <div key={feature.title} className="glass-card p-5">
-                  <feature.icon className="h-6 w-6 text-brand-200" />
-                  <p className="mt-4 font-semibold text-white">{feature.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-stone-300">{feature.note}</p>
+                <div key={feature.title} className="glass-card relative overflow-hidden p-5">
+                  <div className="absolute right-[-2rem] top-[-2rem] h-20 w-20 rounded-full bg-brand-100/70 blur-2xl" />
+                  <div className="relative">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-100 bg-white text-brand-600 shadow-sm">
+                      <feature.icon className="h-6 w-6" />
+                    </div>
+                    <p className="mt-4 font-semibold text-stone-900">{feature.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">{feature.note}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="glass-card p-6">
-            <div className="rounded-[28px] bg-white p-6 text-slate-900 shadow-soft">
+            <div className="rounded-[30px] border border-brand-100/70 bg-gradient-to-br from-white via-[#fffaf5] to-[#fff0e2] p-6 text-slate-900 shadow-[0_24px_60px_rgba(108,54,16,0.08)]">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">Service Snapshot</p>
                   <h2 className="mt-2 font-display text-2xl font-bold">What the platform is handling right now</h2>
                 </div>
-                <div className="rounded-2xl bg-brand-50 p-3 text-brand-700">
+                <div className="rounded-2xl border border-brand-100 bg-white/92 p-3 text-brand-700 shadow-sm">
                   <ChartColumnBig className="h-5 w-5" />
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 {operatingSnapshot.map((item) => (
-                  <div key={item.label} className="rounded-[24px] border border-stone-200 bg-stone-50 p-4">
-                    <p className="text-sm text-stone-500">{item.label}</p>
+                  <div key={item.label} className="rounded-[24px] border border-brand-100 bg-white/90 p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-600">{item.label}</p>
                     <h3 className="mt-3 font-display text-4xl font-semibold text-stone-900">{item.value}</h3>
                     <p className="mt-2 text-sm leading-6 text-stone-600">{item.note}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 rounded-[24px] bg-stone-950 p-5 text-white">
+              <div className="mt-6 rounded-[24px] border border-brand-100 bg-[#fff4ea] p-5 text-stone-900">
                 <div className="flex items-center gap-3">
-                  <Clock3 className="h-5 w-5 text-brand-200" />
+                  <Clock3 className="h-5 w-5 text-brand-700" />
                   <div>
-                    <p className="text-sm uppercase tracking-[0.22em] text-stone-400">Operating note</p>
-                    <p className="mt-1 text-sm text-stone-200">
+                    <p className="text-sm uppercase tracking-[0.22em] text-brand-600">Operating note</p>
+                    <p className="mt-1 text-sm text-stone-600">
                       Peak-hour analytics, recommendations, and support replies are all driven by the same live dataset used across orders, tables, and reservations.
                     </p>
                   </div>
@@ -109,12 +115,12 @@ const GuestHomePage = () => {
 
               <div className="mt-6 space-y-4">
                 {recommendations.slice(0, 3).map((item) => (
-                  <div key={item._id} className="flex items-center gap-4 rounded-3xl border border-slate-200 p-3">
+                  <div key={item._id} className="flex items-center gap-4 rounded-3xl border border-brand-100 bg-white/88 p-3 shadow-sm">
                     <img src={item.image} alt={item.name} className="h-20 w-20 rounded-2xl object-cover" />
                     <div>
                       <p className="font-semibold text-slate-900">{item.name}</p>
                       <p className="text-sm text-slate-500">{item.reason}</p>
-                      <p className="mt-2 text-sm font-semibold text-amber-600">{formatCurrency(item.price)}</p>
+                      <p className="mt-2 text-sm font-semibold text-brand-700">{formatCurrency(item.price)}</p>
                     </div>
                   </div>
                 ))}
@@ -126,11 +132,14 @@ const GuestHomePage = () => {
 
       <section className="px-6 pb-12 md:px-10 md:pb-20">
         <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <SectionCard title="Branches in Service" subtitle="Each location carries its own identity, cuisine mix, and operating data while staying connected to one platform.">
+          <SectionCard title="Branches in Service" subtitle="Each location keeps its own identity and operating data while staying connected to one platform.">
             <div className="grid gap-6 md:grid-cols-2">
               {restaurants.map((restaurant) => (
-                <article key={restaurant._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
-                  <img src={restaurant.heroImage} alt={restaurant.name} className="h-56 w-full object-cover" />
+                <article key={restaurant._id} className="overflow-hidden rounded-[30px] border border-brand-100 bg-white shadow-[0_22px_50px_rgba(108,54,16,0.08)]">
+                  <div className="relative">
+                    <img src={restaurant.heroImage} alt={restaurant.name} className="h-56 w-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
+                  </div>
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -139,14 +148,14 @@ const GuestHomePage = () => {
                           {restaurant.address?.city}, {restaurant.address?.state}
                         </p>
                       </div>
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      <span className="rounded-full border border-brand-100 bg-[#fff5eb] px-3 py-1 text-xs font-semibold text-brand-700">
                         {restaurant.rating}/5
                       </span>
                     </div>
                     <p className="mt-3 text-sm text-slate-600">{restaurant.description}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {restaurant.cuisineTypes?.map((cuisine) => (
-                        <span key={cuisine} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                        <span key={cuisine} className="rounded-full border border-brand-100 bg-white px-3 py-1 text-xs font-semibold text-stone-600">
                           {cuisine}
                         </span>
                       ))}
@@ -157,17 +166,17 @@ const GuestHomePage = () => {
             </div>
           </SectionCard>
 
-          <SectionCard title="Popular Right Now" subtitle="A lighter public menu view that feels like a real ordering surface rather than a project placeholder.">
+          <SectionCard title="Popular Right Now" subtitle="A cleaner public menu view that feels like a real ordering surface.">
             <div className="space-y-4">
               {menuItems.map((item) => (
-                <div key={item._id} className="flex items-center gap-4 rounded-3xl border border-slate-200 p-3">
+                <div key={item._id} className="flex items-center gap-4 rounded-3xl border border-brand-100 bg-white/90 p-3 shadow-sm">
                   <img src={item.image} alt={item.name} className="h-20 w-20 rounded-2xl object-cover" />
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900">{item.name}</p>
                     <p className="text-sm text-slate-500">{item.category}</p>
                     <p className="mt-2 text-sm text-slate-600">{item.description}</p>
                   </div>
-                  <p className="font-semibold text-amber-600">{formatCurrency(item.price)}</p>
+                  <p className="font-semibold text-brand-700">{formatCurrency(item.price)}</p>
                 </div>
               ))}
             </div>
