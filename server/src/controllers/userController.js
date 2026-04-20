@@ -6,9 +6,7 @@ import User from "../models/User.js";
 import { roles } from "../config/constants.js";
 import { demoStore } from "../services/demoStore.js";
 import { buildListFilter, buildScopeFilter, mergeFilters, scopePayloadToUser } from "../services/queryService.js";
-
-const normalizeText = (value = "") => String(value).trim();
-const normalizeEmail = (value = "") => String(value).trim().toLowerCase();
+import { normalizeEmail, normalizeText, validateUserPayload } from "../services/validationService.js";
 
 const sanitizeUserPayload = (req, payload) => {
   const nextPayload = scopePayloadToUser(req, "User", payload);
@@ -120,6 +118,7 @@ export const getUser = asyncHandler(async (req, res) => {
 
 export const createUser = asyncHandler(async (req, res) => {
   const payload = ensurePasswordForCreate(sanitizeUserPayload(req, req.body));
+  validateUserPayload(payload, { requirePassword: true });
   const existingUser = await findExistingUserByEmail(payload.email);
 
   if (existingUser) {
@@ -141,6 +140,7 @@ export const createUser = asyncHandler(async (req, res) => {
 export const updateUser = asyncHandler(async (req, res) => {
   const scope = buildScopeFilter(req, "User");
   const sanitizedPayload = removeBlankPassword(sanitizeUserPayload(req, req.body));
+  validateUserPayload({ ...req.body, ...sanitizedPayload }, { requirePassword: false });
 
   if (sanitizedPayload.email) {
     const existingUser = await findExistingUserByEmail(sanitizedPayload.email);

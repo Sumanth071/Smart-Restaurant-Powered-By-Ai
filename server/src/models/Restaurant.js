@@ -50,14 +50,18 @@ const restaurantSchema = new mongoose.Schema(
     totalTables: {
       type: Number,
       default: 0,
+      min: [0, "Total tables cannot be negative"],
     },
     totalStaff: {
       type: Number,
       default: 0,
+      min: [0, "Total staff cannot be negative"],
     },
     rating: {
       type: Number,
       default: 4.5,
+      min: [0, "Rating cannot be negative"],
+      max: [5, "Rating cannot exceed 5"],
     },
     address: {
       line: String,

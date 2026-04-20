@@ -17,11 +17,13 @@ const orderItemSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 1,
+      min: [1, "Quantity must be at least 1"],
     },
     price: {
       type: Number,
       required: true,
       default: 0,
+      min: [0, "Price cannot be negative"],
     },
   },
   { _id: false }
@@ -84,10 +86,12 @@ const orderSchema = new mongoose.Schema(
     discount: {
       type: Number,
       default: 0,
+      min: [0, "Discount cannot be negative"],
     },
     totalAmount: {
       type: Number,
       default: 0,
+      min: [0, "Total amount cannot be negative"],
     },
     notes: {
       type: String,

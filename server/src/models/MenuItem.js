@@ -26,6 +26,7 @@ const menuItemSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: [0, "Price cannot be negative"],
     },
     isVeg: {
       type: Boolean,
@@ -43,6 +44,7 @@ const menuItemSchema = new mongoose.Schema(
     prepTime: {
       type: Number,
       default: 20,
+      min: [0, "Preparation time cannot be negative"],
     },
     image: {
       type: String,
@@ -55,6 +57,7 @@ const menuItemSchema = new mongoose.Schema(
     popularityScore: {
       type: Number,
       default: 70,
+      min: [0, "Popularity score cannot be negative"],
     },
   },
   { timestamps: true }

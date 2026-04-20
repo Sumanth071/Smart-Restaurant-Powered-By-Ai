@@ -43,6 +43,7 @@ const bookingSchema = new mongoose.Schema(
     guestCount: {
       type: Number,
       required: true,
+      min: [1, "Guest count must be at least 1"],
     },
     occasion: {
       type: String,

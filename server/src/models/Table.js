@@ -17,6 +17,7 @@ const tableSchema = new mongoose.Schema(
     capacity: {
       type: Number,
       required: true,
+      min: [1, "Capacity must be at least 1"],
     },
     zone: {
       type: String,

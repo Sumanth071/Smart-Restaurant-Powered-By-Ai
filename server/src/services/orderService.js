@@ -1,4 +1,5 @@
 import MenuItem from "../models/MenuItem.js";
+import { requireMinNumber, requireNonNegativeNumber } from "./validationService.js";
 
 export const generateOrderNumber = () => `ORD-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
 
@@ -25,6 +26,9 @@ export const normalizeOrderPayload = async (payload) => {
 
     const quantity = Number(item.quantity || 1);
     const price = Number(item.price ?? match?.price ?? 0);
+
+    requireMinNumber(quantity, `Quantity for item ${item.name || match?.name || "order item"}`, 1);
+    requireNonNegativeNumber(price, `Price for item ${item.name || match?.name || "order item"}`);
 
     return {
       menuItem: item.menuItem || match?._id || null,

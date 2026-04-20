@@ -1,6 +1,15 @@
 import { randomUUID } from "crypto";
 
 import { roles } from "../config/constants.js";
+import {
+  createValidationError,
+  normalizeEmail,
+  requireMinNumber,
+  requireNonNegativeNumber,
+  validateAuthLoginPayload,
+  validateAuthRegistrationPayload,
+  validateEntityPayload,
+} from "./validationService.js";
 
 const collectionKeys = {
   User: "users",
@@ -1007,12 +1016,19 @@ const prepareOrderPayload = (payload, existingItem = null) => {
   const nextPayload = { ...payload };
   const items = Array.isArray(nextPayload.items) ? nextPayload.items : [];
 
+  if (!items.length) {
+    throw createValidationError("At least one menu item is required for an order");
+  }
+
   nextPayload.items = items.map((item) => {
     const matchedMenuItem = item.menuItem
       ? store.menuItems.find((entry) => entry._id === item.menuItem)
       : store.menuItems.find((entry) => entry.name.toLowerCase() === String(item.name || "").toLowerCase());
     const quantity = Number(item.quantity || 1);
     const price = Number(item.price ?? matchedMenuItem?.price ?? 0);
+
+    requireMinNumber(quantity, `Quantity for item ${item.name || matchedMenuItem?.name || "order item"}`, 1);
+    requireNonNegativeNumber(price, `Price for item ${item.name || matchedMenuItem?.name || "order item"}`);
 
     return {
       menuItem: item.menuItem || matchedMenuItem?._id || null,
@@ -1063,6 +1079,7 @@ const createItem = (modelName, payload, req) => {
   const collection = store[collectionKey];
   let nextPayload = scopePayloadToUser(req, modelName, payload);
   nextPayload = normalizeForCollection(modelName, nextPayload);
+  validateEntityPayload(modelName, nextPayload, { requirePassword: modelName === "User" });
   const time = nowIso();
   const item = {
     _id: createId(),
@@ -1087,6 +1104,7 @@ const updateItem = (modelName, id, payload, req) => {
 
   let nextPayload = scopePayloadToUser(req, modelName, payload);
   nextPayload = normalizeForCollection(modelName, nextPayload, collection[index]);
+  validateEntityPayload(modelName, { ...collection[index], ...nextPayload }, { requirePassword: false });
 
   collection[index] = {
     ...collection[index],
@@ -1114,7 +1132,9 @@ const removeItem = (modelName, id, req) => {
 
 const login = async ({ email, password }) => {
   initStore();
-  const user = store.users.find((entry) => entry.email.toLowerCase() === String(email).toLowerCase() && entry.password === password);
+  validateAuthLoginPayload({ email, password });
+  const normalizedEmail = normalizeEmail(email);
+  const user = store.users.find((entry) => entry.email.toLowerCase() === normalizedEmail && entry.password === password);
 
   if (user) {
     user.lastActive = nowIso();
@@ -1126,7 +1146,9 @@ const login = async ({ email, password }) => {
 
 const register = async ({ name, email, password, phone }) => {
   initStore();
-  const existingUser = store.users.find((entry) => entry.email.toLowerCase() === String(email).toLowerCase());
+  validateAuthRegistrationPayload({ name, email, password, phone });
+  const normalizedEmail = normalizeEmail(email);
+  const existingUser = store.users.find((entry) => entry.email.toLowerCase() === normalizedEmail);
 
   if (existingUser) {
     throw new Error("A user with this email already exists");
@@ -1136,7 +1158,7 @@ const register = async ({ name, email, password, phone }) => {
   const user = {
     _id: createId(),
     name,
-    email: String(email).trim().toLowerCase(),
+    email: normalizedEmail,
     password,
     phone,
     avatar: "",
@@ -1160,6 +1182,7 @@ const getUserById = async (id) => {
 
 const createOrUpdateUser = async (payload, existingId = null) => {
   initStore();
+  validateEntityPayload("User", payload, { requirePassword: !existingId });
 
   if (existingId) {
     const index = store.users.findIndex((entry) => entry._id === existingId);

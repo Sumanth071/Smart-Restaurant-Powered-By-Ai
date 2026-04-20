@@ -5,9 +5,12 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
 import { roles } from "../config/constants.js";
 import { demoStore } from "../services/demoStore.js";
-
-const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
-const normalizeText = (value = "") => String(value).trim();
+import {
+  normalizeEmail,
+  normalizeText,
+  validateAuthLoginPayload,
+  validateAuthRegistrationPayload,
+} from "../services/validationService.js";
 
 const createToken = (userId) =>
   jwt.sign({ id: userId }, process.env.JWT_SECRET || "development-secret", {
@@ -19,6 +22,28 @@ export const register = asyncHandler(async (req, res) => {
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || "");
   const phone = normalizeText(req.body.phone);
+
+  if (!name) {
+    res.status(400);
+    throw new Error("Name is required");
+  }
+
+  if (!email) {
+    res.status(400);
+    throw new Error("Email is required");
+  }
+
+  if (!phone) {
+    res.status(400);
+    throw new Error("Phone is required");
+  }
+
+  if (!password) {
+    res.status(400);
+    throw new Error("Password is required");
+  }
+
+  validateAuthRegistrationPayload({ name, email, password, phone });
 
   if (isDemoMode) {
     const user = await demoStore.register({ name, email, password, phone });
@@ -55,6 +80,18 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || "");
+
+  if (!email) {
+    res.status(400);
+    throw new Error("Email is required");
+  }
+
+  if (!password) {
+    res.status(400);
+    throw new Error("Password is required");
+  }
+
+  validateAuthLoginPayload({ email, password });
 
   if (isDemoMode) {
     const user = await demoStore.login({ email, password });

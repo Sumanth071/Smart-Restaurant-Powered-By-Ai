@@ -6,7 +6,7 @@ const workspace = process.cwd();
 
 const decodeJwtPayload = (token) => JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
 
-const request = async (path, { token, method = "GET", body } = {}) => {
+const requestRaw = async (path, { token, method = "GET", body } = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
@@ -19,12 +19,35 @@ const request = async (path, { token, method = "GET", body } = {}) => {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
 
+  return { response, data, text };
+};
+
+const request = async (path, options = {}) => {
+  const { response, data, text } = await requestRaw(path, options);
+
   if (!response.ok) {
     const message = data?.message || text || response.statusText;
-    throw new Error(`${method} ${path} failed: ${message}`);
+    throw new Error(`${options.method || "GET"} ${path} failed: ${message}`);
   }
 
   return data;
+};
+
+const expectFailure = async (path, { status, includes, ...options }) => {
+  const { response, data, text } = await requestRaw(path, options);
+  const message = data?.message || text || response.statusText;
+
+  if (response.ok) {
+    throw new Error(`Expected ${options.method || "GET"} ${path} to fail with ${status}, but it succeeded`);
+  }
+
+  if (response.status !== status) {
+    throw new Error(`Expected ${options.method || "GET"} ${path} to fail with ${status}, received ${response.status}`);
+  }
+
+  if (includes && !String(message).toLowerCase().includes(String(includes).toLowerCase())) {
+    throw new Error(`Expected ${options.method || "GET"} ${path} to include "${includes}", received "${message}"`);
+  }
 };
 
 const waitForServer = async () => {
@@ -87,6 +110,19 @@ const run = async () => {
     ensureJwtLifetime(superToken);
     ensureJwtLifetime(guestToken);
 
+    await expectFailure("/auth/login", {
+      method: "POST",
+      status: 400,
+      includes: "email is required",
+      body: { email: "", password: "password123" },
+    });
+    await expectFailure("/auth/login", {
+      method: "POST",
+      status: 401,
+      includes: "invalid email or password",
+      body: { email: "superadmin@smartdine.ai", password: "wrong-password" },
+    });
+
     const restaurants = await request("/restaurants");
     const menuItems = await request("/menu-items");
     const baseRestaurantId = restaurants[0]?._id;
@@ -102,6 +138,35 @@ const run = async () => {
     await request("/ai/insights", { token: superToken });
     await request("/ai/chatbot", { method: "POST", body: { message: "book a table" } });
     await request("/ai/recommendations", { method: "POST", body: { preference: "signature" } });
+    await expectFailure("/bookings", {
+      token: guestToken,
+      method: "POST",
+      status: 400,
+      includes: "guest count",
+      body: {
+        restaurant: baseRestaurantId,
+        guestName: "Guest Smoke Test",
+        guestEmail: "guest@example.com",
+        guestPhone: "+91 90000 20000",
+        bookingDate: "2030-01-15",
+        timeSlot: "19:30",
+        guestCount: 0,
+      },
+    });
+    await expectFailure("/orders", {
+      token: guestToken,
+      method: "POST",
+      status: 400,
+      includes: "at least one menu item",
+      body: {
+        restaurant: baseRestaurantId,
+        customerName: "Guest Smoke Test",
+        customerEmail: "guest@example.com",
+        customerPhone: "+91 90000 20000",
+        orderType: "delivery",
+        items: [],
+      },
+    });
 
     const uniqueSuffix = Date.now();
 
@@ -332,7 +397,9 @@ const run = async () => {
     delete createdIds.restaurantId;
 
     console.log("API smoke test passed.");
-    console.log("Verified: 30-day JWT, auth, dashboard, reports, AI, restaurant/menu/table CRUD, guest booking/reservation/order CRUD, and user CRUD.");
+    console.log(
+      "Verified: 30-day JWT, auth, validation failures, dashboard, reports, AI, restaurant/menu/table CRUD, guest booking/reservation/order CRUD, and user CRUD."
+    );
   } finally {
     const cleanupOrder = [
       [createdIds.orderId, "/orders"],
