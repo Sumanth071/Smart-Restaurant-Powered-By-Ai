@@ -2,18 +2,26 @@ import axios from "axios";
 
 export const tokenStorageKey = "smart-restaurant-token";
 
-const resolveBaseUrl = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
+const isLocalApiUrl = (value = "") => /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i.test(String(value).trim());
 
+const resolveBaseUrl = () => {
   if (typeof window === "undefined") {
-    return "/api";
+    return import.meta.env.VITE_API_BASE_URL || "/api";
   }
 
   const { hostname, port } = window.location;
+  const configuredBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").trim();
+  const runningLocally = hostname === "127.0.0.1" || hostname === "localhost";
 
-  if (hostname === "127.0.0.1" || hostname === "localhost") {
+  if (configuredBaseUrl) {
+    if (!runningLocally && isLocalApiUrl(configuredBaseUrl)) {
+      return "/api";
+    }
+
+    return configuredBaseUrl;
+  }
+
+  if (runningLocally) {
     if (port === "4173" || port === "5173") {
       return `http://${hostname}:8080/api`;
     }

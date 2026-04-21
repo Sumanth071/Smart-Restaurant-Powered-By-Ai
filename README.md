@@ -104,7 +104,7 @@ npm install --prefix client
 Create these files from the provided examples:
 
 - `server/.env`
-- `client/.env`
+- `client/.env.development`
 
 Default local examples already point to:
 
