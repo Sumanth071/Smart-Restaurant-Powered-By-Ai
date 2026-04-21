@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useConfirm } from "../../context/ConfirmDialogContext";
+import { useToast } from "../../context/ToastContext";
 import { dashboardNavigation } from "../../data/navigation";
 import { toSentenceCase } from "../../utils/helpers";
 import Sidebar from "./Sidebar";
@@ -10,12 +12,32 @@ import Sidebar from "./Sidebar";
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { confirm } = useConfirm();
+  const { pushToast } = useToast();
   const location = useLocation();
 
   const currentLabel = useMemo(() => {
     const item = dashboardNavigation.find((entry) => location.pathname === entry.to);
     return item?.label || "Dashboard";
   }, [location.pathname]);
+
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: "Sign out of the workspace?",
+      description: "Your current session will be closed and you will return to the login screen.",
+      confirmLabel: "Logout",
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    logout();
+    pushToast({
+      title: "Logged out",
+      message: "Your workspace session has been closed safely.",
+    });
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#fff8f3]">
@@ -48,7 +70,7 @@ const DashboardLayout = () => {
                   <p className="text-[11px] uppercase tracking-[0.28em] text-brand-600">{toSentenceCase(user?.role)}</p>
                   <p className="text-sm font-semibold text-stone-800">{user?.name}</p>
                 </div>
-                <button type="button" className="btn-secondary py-2" onClick={logout}>
+                <button type="button" className="btn-secondary py-2" onClick={handleLogout}>
                   <UserCircle2 className="mr-2 h-4 w-4" />
                   Logout
                 </button>

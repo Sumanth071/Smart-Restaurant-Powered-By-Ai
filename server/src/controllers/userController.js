@@ -7,6 +7,7 @@ import { roles } from "../config/constants.js";
 import { demoStore } from "../services/demoStore.js";
 import { buildListFilter, buildScopeFilter, mergeFilters, scopePayloadToUser } from "../services/queryService.js";
 import { normalizeEmail, normalizeText, validateUserPayload } from "../services/validationService.js";
+import { recordAuditLog } from "../services/auditService.js";
 
 const sanitizeUserPayload = (req, payload) => {
   const nextPayload = scopePayloadToUser(req, "User", payload);
@@ -128,12 +129,24 @@ export const createUser = asyncHandler(async (req, res) => {
 
   if (isDemoMode) {
     const user = await demoStore.createOrUpdateUser(payload);
+    await recordAuditLog(req, {
+      action: "create",
+      modelName: "User",
+      entityId: user?._id,
+      after: user,
+    });
     res.status(201).json(user);
     return;
   }
 
   const user = await User.create(payload);
   const populatedUser = await User.findById(user._id).populate("restaurant");
+  await recordAuditLog(req, {
+    action: "create",
+    modelName: "User",
+    entityId: populatedUser?._id,
+    after: populatedUser,
+  });
   res.status(201).json(populatedUser);
 });
 
@@ -152,6 +165,7 @@ export const updateUser = asyncHandler(async (req, res) => {
   }
 
   if (isDemoMode) {
+    const existingUser = demoStore.getById("User", req.params.id, req);
     const user = await demoStore.createOrUpdateUser(sanitizedPayload, req.params.id);
 
     if (!user) {
@@ -159,8 +173,22 @@ export const updateUser = asyncHandler(async (req, res) => {
       throw new Error("User not found");
     }
 
+    await recordAuditLog(req, {
+      action: sanitizedPayload.status !== undefined && String(existingUser?.status || "") !== String(user.status || "") ? "status-change" : "update",
+      modelName: "User",
+      entityId: user?._id,
+      before: existingUser,
+      after: user,
+    });
     res.json(user);
     return;
+  }
+
+  const existingUser = await User.findOne(mergeFilters({ _id: req.params.id }, scope)).populate("restaurant");
+
+  if (!existingUser) {
+    res.status(404);
+    throw new Error("User not found");
   }
 
   const payload = await hashPasswordIfPresent(sanitizedPayload);
@@ -174,11 +202,19 @@ export const updateUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
+  await recordAuditLog(req, {
+    action: sanitizedPayload.status !== undefined && String(existingUser?.status || "") !== String(user.status || "") ? "status-change" : "update",
+    modelName: "User",
+    entityId: user?._id,
+    before: existingUser,
+    after: user,
+  });
   res.json(user);
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
   if (isDemoMode) {
+    const existingUser = demoStore.getById("User", req.params.id, req);
     const removed = demoStore.remove("User", req.params.id, req);
 
     if (!removed) {
@@ -186,6 +222,12 @@ export const deleteUser = asyncHandler(async (req, res) => {
       throw new Error("User not found");
     }
 
+    await recordAuditLog(req, {
+      action: "delete",
+      modelName: "User",
+      entityId: req.params.id,
+      before: existingUser,
+    });
     res.json({ message: "User deleted successfully" });
     return;
   }
@@ -198,5 +240,11 @@ export const deleteUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
+  await recordAuditLog(req, {
+    action: "delete",
+    modelName: "User",
+    entityId: user?._id,
+    before: user,
+  });
   res.json({ message: "User deleted successfully" });
 });

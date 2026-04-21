@@ -1,7 +1,8 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import { isDemoMode } from "../config/env.js";
-import { buildListFilter, buildScopeFilter, mergeFilters, scopePayloadToUser } from "../services/queryService.js";
+import { buildListFilter, buildScopeFilter, mergeFilters, parsePagination, parseSort, scopePayloadToUser } from "../services/queryService.js";
 import { demoStore } from "../services/demoStore.js";
+import { recordAuditLog } from "../services/auditService.js";
 
 const populateQuery = (query, populate) => {
   if (!populate) {
@@ -16,16 +17,41 @@ export const createCrudController = (Model, options = {}) => {
 
   return {
     list: asyncHandler(async (req, res) => {
+      const resolvedSort = parseSort(req.query.sort, sort);
+      const pagination = parsePagination(req.query, { limit: 8 });
+
       if (isDemoMode) {
-        const items = demoStore.list(Model.modelName, req, { searchFields, sort });
+        const items = demoStore.list(Model.modelName, req, { searchFields, sort: resolvedSort, pagination });
         res.json(items);
         return;
       }
 
       const filters = buildListFilter(req.query, searchFields);
       const scope = buildScopeFilter(req, Model.modelName);
-      const query = populateQuery(Model.find(mergeFilters(filters, scope)).sort(sort), populate);
+      const mergedFilters = mergeFilters(filters, scope);
+      let query = populateQuery(Model.find(mergedFilters).sort(resolvedSort), populate);
+
+      if (pagination.enabled) {
+        query = query.skip(pagination.skip).limit(pagination.limit);
+      }
+
       const items = await query;
+
+      if (pagination.enabled) {
+        const total = await Model.countDocuments(mergedFilters);
+
+        res.json({
+          items,
+          pagination: {
+            page: pagination.page,
+            limit: pagination.limit,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / pagination.limit)),
+          },
+        });
+        return;
+      }
+
       res.json(items);
     }),
 
@@ -79,6 +105,13 @@ export const createCrudController = (Model, options = {}) => {
         item = await item.populate(populate);
       }
 
+      await recordAuditLog(req, {
+        action: "create",
+        modelName: Model.modelName,
+        entityId: item._id,
+        after: item,
+      });
+
       res.status(201).json(item);
     }),
 
@@ -129,6 +162,14 @@ export const createCrudController = (Model, options = {}) => {
       );
       const item = await query;
 
+      await recordAuditLog(req, {
+        action: payload.status !== undefined && String(existingItem.status || "") !== String(item.status || "") ? "status-change" : "update",
+        modelName: Model.modelName,
+        entityId: item._id,
+        before: existingItem,
+        after: item,
+      });
+
       res.json(item);
     }),
 
@@ -152,6 +193,13 @@ export const createCrudController = (Model, options = {}) => {
         res.status(404);
         throw new Error(`${Model.modelName} not found`);
       }
+
+      await recordAuditLog(req, {
+        action: "delete",
+        modelName: Model.modelName,
+        entityId: item._id,
+        before: item,
+      });
 
       res.json({ message: `${Model.modelName} deleted successfully` });
     }),

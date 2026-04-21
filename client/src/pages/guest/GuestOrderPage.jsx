@@ -1,10 +1,12 @@
-import { Minus, Plus, ShoppingBag } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, Search, ShoppingBag } from "lucide-react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../../api/client";
 import SectionCard from "../../components/ui/SectionCard";
 import { useAuth } from "../../context/AuthContext";
+import { useApiQuery, useQueryClient } from "../../context/QueryClientContext";
+import { useToast } from "../../context/ToastContext";
 import { formatCurrency } from "../../utils/helpers";
 
 const getOrderDefaults = (user) => ({
@@ -14,80 +16,100 @@ const getOrderDefaults = (user) => ({
   orderType: "delivery",
 });
 
+const resolveRequestMessage = (error, fallback) => error?.response?.data?.message || error?.message || fallback;
+
+const resolveRestaurants = (restaurants = [], menuItems = []) => {
+  if (restaurants.length) {
+    return restaurants;
+  }
+
+  return menuItems.reduce((collection, item) => {
+    const restaurant = item.restaurant;
+    const restaurantId = String(restaurant?._id || restaurant || "");
+
+    if (!restaurantId || collection.some((entry) => String(entry._id) === restaurantId)) {
+      return collection;
+    }
+
+    return [
+      ...collection,
+      {
+        _id: restaurantId,
+        name: restaurant?.name || "Restaurant",
+      },
+    ];
+  }, []);
+};
+
 const GuestOrderPage = () => {
   const { user } = useAuth();
-  const [restaurants, setRestaurants] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
+  const { pushToast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedRestaurant, setSelectedRestaurant] = useState("");
   const [cart, setCart] = useState([]);
   const [orderForm, setOrderForm] = useState(getOrderDefaults(user));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const deferredSearch = useDeferredValue(searchTerm.trim().toLowerCase());
 
-  const loadData = async () => {
-    setIsLoading(true);
-    setError("");
+  const restaurantsQuery = useApiQuery({
+    queryKey: ["guest", "restaurants"],
+    url: "/restaurants",
+    staleTime: 60000,
+  });
+  const menuItemsQuery = useApiQuery({
+    queryKey: ["guest", "menu-items"],
+    url: "/menu-items",
+    staleTime: 45000,
+  });
 
-    const [restaurantResult, menuResult] = await Promise.allSettled([api.get("/restaurants"), api.get("/menu-items")]);
-    const nextRestaurants = restaurantResult.status === "fulfilled" ? restaurantResult.value.data : [];
-    const nextMenuItems = menuResult.status === "fulfilled" ? menuResult.value.data : [];
-    const fallbackRestaurants = nextMenuItems.reduce((collection, item) => {
-      const restaurant = item.restaurant;
-      const restaurantId = String(restaurant?._id || restaurant || "");
-
-      if (!restaurantId || collection.some((entry) => String(entry._id) === restaurantId)) {
-        return collection;
-      }
-
-      return [
-        ...collection,
-        {
-          _id: restaurantId,
-          name: restaurant?.name || "Restaurant",
-        },
-      ];
-    }, []);
-
-    const resolvedRestaurants = nextRestaurants.length ? nextRestaurants : fallbackRestaurants;
-
-    setRestaurants(resolvedRestaurants);
-    setMenuItems(nextMenuItems);
-    setSelectedRestaurant((current) => {
-      if (current && resolvedRestaurants.some((restaurant) => String(restaurant._id) === String(current))) {
-        return current;
-      }
-
-      return nextMenuItems[0]?.restaurant?._id || resolvedRestaurants[0]?._id || "";
-    });
-
-    if (restaurantResult.status === "rejected" && menuResult.status === "rejected") {
-      setError("Unable to load the guest ordering menu right now. Please retry.");
-    } else if (!nextMenuItems.length) {
-      setError("No menu items are available right now. Please retry in a moment.");
-    }
-
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    loadData().catch(() => {
-      setIsLoading(false);
-      setError("Unable to load the guest ordering menu right now. Please retry.");
-    });
-  }, []);
+  const restaurants = useMemo(
+    () => resolveRestaurants(restaurantsQuery.data ?? [], menuItemsQuery.data ?? []),
+    [menuItemsQuery.data, restaurantsQuery.data]
+  );
+  const menuItems = menuItemsQuery.data ?? [];
+  const isLoading = restaurantsQuery.isLoading || menuItemsQuery.isLoading;
+  const isRefreshing = restaurantsQuery.isFetching || menuItemsQuery.isFetching;
+  const loadError = !restaurants.length && !menuItems.length ? "Unable to load the guest ordering menu right now. Please retry." : "";
 
   useEffect(() => {
     if (!user) {
       return;
     }
 
-    setOrderForm((current) => ({ ...getOrderDefaults(user), ...current }));
+    setOrderForm((current) => ({
+      customerName: current.customerName || user.name || "",
+      customerEmail: current.customerEmail || user.email || "",
+      customerPhone: current.customerPhone || user.phone || "",
+      orderType: current.orderType || "delivery",
+    }));
   }, [user]);
 
+  useEffect(() => {
+    setSelectedRestaurant((current) => {
+      if (current && restaurants.some((restaurant) => String(restaurant._id) === String(current))) {
+        return current;
+      }
+
+      return menuItems[0]?.restaurant?._id || restaurants[0]?._id || "";
+    });
+  }, [menuItems, restaurants]);
+
   const filteredMenu = useMemo(
-    () => menuItems.filter((item) => !selectedRestaurant || String(item.restaurant?._id || item.restaurant) === String(selectedRestaurant)),
-    [menuItems, selectedRestaurant]
+    () =>
+      menuItems.filter((item) => {
+        const restaurantMatches = !selectedRestaurant || String(item.restaurant?._id || item.restaurant) === String(selectedRestaurant);
+        const searchableText = [item.name, item.category, item.description, ...(item.tags || [])]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        const searchMatches = !deferredSearch || searchableText.includes(deferredSearch);
+
+        return restaurantMatches && searchMatches;
+      }),
+    [deferredSearch, menuItems, selectedRestaurant]
   );
 
   const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0), [cart]);
@@ -114,6 +136,29 @@ const GuestOrderPage = () => {
     );
   };
 
+  const retryLoad = async () => {
+    setError("");
+    setMessage("");
+
+    const results = await Promise.allSettled([restaurantsQuery.refetch(), menuItemsQuery.refetch()]);
+
+    if (results.every((result) => result.status === "rejected")) {
+      pushToast({
+        tone: "error",
+        title: "Refresh failed",
+        message: "The guest ordering menu is still unavailable. Please retry in a moment.",
+      });
+      return;
+    }
+
+    pushToast({
+      tone: "info",
+      title: "Menu refreshed",
+      message: "The latest restaurant and menu data has been loaded.",
+      duration: 2200,
+    });
+  };
+
   const submitOrder = async (event) => {
     event.preventDefault();
     setError("");
@@ -124,12 +169,25 @@ const GuestOrderPage = () => {
       return;
     }
 
+    if (!String(orderForm.customerName).trim() || !String(orderForm.customerEmail).trim() || !String(orderForm.customerPhone).trim()) {
+      setError("Enter the customer name, email, and phone before placing the order.");
+      return;
+    }
+
+    const restaurantId = selectedRestaurant || cart[0]?.restaurant?._id || cart[0]?.restaurant;
+
+    if (!restaurantId) {
+      setError("Choose a restaurant before placing the order.");
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
       await api.post("/orders", {
-        restaurant: selectedRestaurant || cart[0]?.restaurant?._id,
-        customerName: orderForm.customerName,
-        customerEmail: orderForm.customerEmail,
-        customerPhone: orderForm.customerPhone,
+        restaurant: restaurantId,
+        customerName: String(orderForm.customerName).trim(),
+        customerEmail: String(orderForm.customerEmail).trim(),
+        customerPhone: String(orderForm.customerPhone).trim(),
         orderType: orderForm.orderType,
         items: cart.map((item) => ({
           menuItem: item._id,
@@ -140,11 +198,27 @@ const GuestOrderPage = () => {
         notes: "Created from guest ordering page",
       });
 
+      queryClient.invalidateQueries("orders");
+      pushToast({
+        tone: "success",
+        title: "Order placed",
+        message: "The order was sent to the restaurant team successfully.",
+      });
       setMessage("Order placed successfully. It is now visible in the orders workspace.");
-      setCart([]);
-      setOrderForm(getOrderDefaults(user));
+      startTransition(() => {
+        setCart([]);
+        setOrderForm(getOrderDefaults(user));
+      });
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to place the order.");
+      const messageText = resolveRequestMessage(requestError, "Unable to place the order.");
+      setError(messageText);
+      pushToast({
+        tone: "error",
+        title: "Order failed",
+        message: messageText,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -167,23 +241,41 @@ const GuestOrderPage = () => {
         </div>
 
         {message ? <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-600">{message}</div> : null}
-        {error ? (
+        {error || loadError ? (
           <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-600 md:flex-row md:items-center md:justify-between">
-            <span>{error}</span>
-            <button type="button" onClick={() => loadData()} className="rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-600">
+            <span>{error || loadError || "Unable to load the guest ordering menu right now. Please retry."}</span>
+            <button
+              type="button"
+              onClick={retryLoad}
+              className="rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-600"
+            >
               Retry
             </button>
           </div>
         ) : null}
 
-        <div className="mb-6 flex justify-center">
-          <select value={selectedRestaurant} onChange={(event) => setSelectedRestaurant(event.target.value)} className="input-shell max-w-md">
+        <div className="mb-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_300px]">
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="input-shell pl-11"
+              placeholder="Search dishes, categories, or tags"
+            />
+          </label>
+          <select value={selectedRestaurant} onChange={(event) => setSelectedRestaurant(event.target.value)} className="input-shell">
             {restaurants.map((restaurant) => (
               <option key={restaurant._id} value={restaurant._id}>
                 {restaurant.name}
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="mb-6 flex items-center justify-between gap-4 text-sm text-stone-500">
+          <p>{filteredMenu.length} dishes ready for the current restaurant view.</p>
+          <p>{isRefreshing ? "Refreshing menu..." : "Live menu synced with restaurant operations."}</p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
@@ -206,7 +298,16 @@ const GuestOrderPage = () => {
               <div className="grid gap-5 md:grid-cols-2">
                 {filteredMenu.map((item) => (
                   <article key={item._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
-                    <img src={item.image} alt={item.name} className="h-52 w-full object-cover" />
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="h-52 w-full object-cover" />
+                    ) : (
+                      <div className="flex h-52 items-center justify-center bg-gradient-to-br from-brand-100 via-white to-brand-50 px-6 text-center">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-600">{item.category}</p>
+                          <p className="mt-3 font-display text-3xl text-stone-900">{item.name}</p>
+                        </div>
+                      </div>
+                    )}
                     <div className="p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -220,7 +321,7 @@ const GuestOrderPage = () => {
                       <p className="mt-3 text-sm text-slate-600">{item.description}</p>
                       <div className="mt-4 flex items-center justify-between">
                         <p className="text-lg font-bold text-amber-600">{formatCurrency(item.price)}</p>
-                        <button type="button" onClick={() => addToCart(item)} className="btn-primary px-4 py-2 text-sm">
+                        <button type="button" onClick={() => addToCart(item)} className="btn-primary px-4 py-2 text-sm" aria-label={`Add ${item.name} to cart`}>
                           Add
                         </button>
                       </div>
@@ -246,25 +347,32 @@ const GuestOrderPage = () => {
             }
           >
             <div className="space-y-4">
-              {cart.map((item) => (
-                <div key={item._id} className="rounded-3xl border border-slate-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-900">{item.name}</p>
-                      <p className="text-sm text-slate-500">{formatCurrency(item.price)}</p>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
-                      <button type="button" onClick={() => updateQuantity(item._id, -1)}>
-                        <Minus className="h-4 w-4 text-slate-600" />
-                      </button>
-                      <span className="text-sm font-semibold text-slate-900">{item.quantity}</span>
-                      <button type="button" onClick={() => updateQuantity(item._id, 1)}>
-                        <Plus className="h-4 w-4 text-slate-600" />
-                      </button>
+              {cart.length ? (
+                cart.map((item) => (
+                  <div key={item._id} className="rounded-3xl border border-slate-200 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{item.name}</p>
+                        <p className="text-sm text-slate-500">{formatCurrency(item.price)}</p>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
+                        <button type="button" onClick={() => updateQuantity(item._id, -1)} aria-label={`Decrease quantity for ${item.name}`}>
+                          <Minus className="h-4 w-4 text-slate-600" />
+                        </button>
+                        <span className="text-sm font-semibold text-slate-900">{item.quantity}</span>
+                        <button type="button" onClick={() => updateQuantity(item._id, 1)} aria-label={`Increase quantity for ${item.name}`}>
+                          <Plus className="h-4 w-4 text-slate-600" />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">
+                  <p className="font-semibold text-slate-900">Your cart is empty.</p>
+                  <p className="mt-2 text-sm text-slate-500">Add one or more dishes from the menu to start an order.</p>
                 </div>
-              ))}
+              )}
 
               <div className="rounded-3xl bg-gradient-to-br from-brand-500 to-brand-700 p-5 text-white">
                 <p className="text-sm text-orange-100">Cart Total</p>
@@ -301,7 +409,7 @@ const GuestOrderPage = () => {
                   <option value="dine-in">Dine-in</option>
                 </select>
                 <button type="submit" className="btn-primary w-full">
-                  Place Order
+                  {isSubmitting ? "Placing Order..." : "Place Order"}
                 </button>
               </form>
             </div>

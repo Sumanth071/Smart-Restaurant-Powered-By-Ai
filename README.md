@@ -21,9 +21,13 @@ A full-stack restaurant operations web product built with the MERN stack. It com
 - Dashboard with operational KPIs and analytics
 - Restaurant, menu, table, booking, order, reservation, and user CRUD
 - Guest-facing booking and ordering pages
+- Shared query caching, toast notifications, and confirm dialogs
+- Route-level error recovery screens
+- Server-side pagination, filters, and admin activity logging
 - AI food recommendations
 - AI customer support assistant
 - Busy-hour and sales insight modules
+- CSV and print-friendly report export
 - MongoDB seed data for a ready-to-demo setup
 - Vercel-ready frontend and API deployment setup
 
@@ -128,6 +132,13 @@ Local URLs:
 
 - Frontend: `http://127.0.0.1:5173`
 - Backend API: `http://127.0.0.1:8080/api`
+
+### 5. Run QA checks
+
+```bash
+npm run smoke:api
+npm run test:run --prefix client
+```
 
 ## Production Notes
 

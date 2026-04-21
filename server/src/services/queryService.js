@@ -37,6 +37,7 @@ export const buildListFilter = (queryParams = {}, searchFields = []) => {
   delete query.page;
   delete query.limit;
   delete query.sort;
+  delete query.paged;
 
   Object.entries(query).forEach(([key, value]) => {
     if (value === undefined || value === null || value === "" || value === "all") {
@@ -53,6 +54,50 @@ export const buildListFilter = (queryParams = {}, searchFields = []) => {
   }
 
   return filter;
+};
+
+export const parsePagination = (queryParams = {}, defaults = {}) => {
+  const enabled = queryParams.paged === "true" || queryParams.page !== undefined || queryParams.limit !== undefined;
+  const defaultPage = Number(defaults.page || 1);
+  const defaultLimit = Number(defaults.limit || 10);
+  const maxLimit = Number(defaults.maxLimit || 50);
+  const page = Math.max(1, Number(queryParams.page || defaultPage || 1));
+  const limit = Math.min(maxLimit, Math.max(1, Number(queryParams.limit || defaultLimit || 10)));
+
+  return {
+    enabled,
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
+};
+
+export const parseSort = (sortValue, fallbackSort = { createdAt: -1 }) => {
+  if (!sortValue) {
+    return fallbackSort;
+  }
+
+  if (typeof sortValue === "object" && !Array.isArray(sortValue)) {
+    return sortValue;
+  }
+
+  const normalized = String(sortValue).trim();
+
+  if (!normalized) {
+    return fallbackSort;
+  }
+
+  if (normalized.startsWith("-")) {
+    return { [normalized.slice(1)]: -1 };
+  }
+
+  const [field, direction = "desc"] = normalized.split(":");
+
+  if (!field) {
+    return fallbackSort;
+  }
+
+  return { [field]: direction.toLowerCase() === "asc" ? 1 : -1 };
 };
 
 export const buildScopeFilter = (req, modelName) => {
@@ -73,6 +118,10 @@ export const buildScopeFilter = (req, modelName) => {
 
     if (modelName === "User") {
       return restaurant ? { $or: [{ restaurant: restaurant._id || restaurant }, { role: roles.GUEST }] } : { _id: null };
+    }
+
+    if (modelName === "AuditLog") {
+      return restaurant ? { restaurant: restaurant._id || restaurant } : { _id: null };
     }
 
     if (restaurantScopedModels.includes(modelName)) {

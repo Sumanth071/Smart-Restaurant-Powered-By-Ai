@@ -1,9 +1,18 @@
 import { ArrowRight, Clock3, ShieldCheck, UtensilsCrossed } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { demoAccounts } from "../../data/demoAccounts";
+
+const getLocalApiMessage = () => {
+  if (typeof window === "undefined") {
+    return "The local API is not reachable right now. Please make sure the backend is running on 127.0.0.1:8080.";
+  }
+
+  return `The local API is not reachable right now. Please make sure the backend is running on ${window.location.hostname}:8080.`;
+};
 
 const resolveAuthErrorMessage = (error) => {
   if (error?.response?.data?.message) {
@@ -11,14 +20,28 @@ const resolveAuthErrorMessage = (error) => {
   }
 
   if (!error?.response) {
-    return "The local API is not reachable right now. Please make sure the backend is running on 127.0.0.1:8080.";
+    return getLocalApiMessage();
   }
 
   return "Unable to complete authentication.";
 };
 
+const resolvePostAuthPath = (userRole, fromPath) => {
+  if (userRole === "guest") {
+    return "/book-table";
+  }
+
+  if (fromPath && fromPath.startsWith("/")) {
+    return fromPath;
+  }
+
+  return "/dashboard";
+};
+
 const LoginPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const { pushToast } = useToast();
   const { user, login, register } = useAuth();
   const [mode, setMode] = useState("login");
   const [formValues, setFormValues] = useState({
@@ -29,27 +52,53 @@ const LoginPage = () => {
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const requestedPath = location.state?.from;
 
   useEffect(() => {
     if (!user) {
       return;
     }
 
-    if (user.role === "guest") {
-      navigate("/book-table", { replace: true });
-      return;
-    }
-
-    navigate("/dashboard", { replace: true });
-  }, [navigate, user]);
+    navigate(resolvePostAuthPath(user.role, requestedPath), { replace: true });
+  }, [navigate, requestedPath, user]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormValues((current) => ({ ...current, [name]: value }));
   };
 
+  const validateForm = () => {
+    if (!String(formValues.email).trim() || !String(formValues.password).trim()) {
+      return "Enter your email and password to continue.";
+    }
+
+    if (mode === "register") {
+      if (!String(formValues.name).trim()) {
+        return "Enter the guest name to create an account.";
+      }
+
+      if (!String(formValues.phone).trim()) {
+        return "Enter the guest phone number to create an account.";
+      }
+    }
+
+    return "";
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const validationMessage = validateForm();
+
+    if (validationMessage) {
+      setError(validationMessage);
+      pushToast({
+        tone: "error",
+        title: "Check the form",
+        message: validationMessage,
+      });
+      return;
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -59,9 +108,21 @@ const LoginPage = () => {
           ? await login({ email: formValues.email, password: formValues.password })
           : await register(formValues);
 
-      navigate(currentUser.role === "guest" ? "/book-table" : "/dashboard");
+      const destination = resolvePostAuthPath(currentUser.role, requestedPath);
+      pushToast({
+        tone: "success",
+        title: mode === "login" ? "Signed in" : "Account ready",
+        message: mode === "login" ? "Your workspace is ready." : "Your guest account has been created successfully.",
+      });
+      navigate(destination, { replace: true });
     } catch (requestError) {
-      setError(resolveAuthErrorMessage(requestError));
+      const message = resolveAuthErrorMessage(requestError);
+      setError(message);
+      pushToast({
+        tone: "error",
+        title: mode === "login" ? "Sign-in failed" : "Registration failed",
+        message,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -69,11 +130,18 @@ const LoginPage = () => {
 
   const applyDemoAccount = (account) => {
     setMode("login");
+    setError("");
     setFormValues((current) => ({
       ...current,
       email: account.email,
       password: account.password,
     }));
+    pushToast({
+      tone: "info",
+      title: `${account.role} demo filled`,
+      message: "The form has been prefilled with the selected demo account.",
+      duration: 2200,
+    });
   };
 
   return (
@@ -161,6 +229,12 @@ const LoginPage = () => {
             </button>
           </div>
 
+          {requestedPath ? (
+            <div className="mb-5 rounded-2xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-700">
+              Continue sign-in to return to <span className="font-semibold">{requestedPath}</span>.
+            </div>
+          ) : null}
+
           {error ? <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div> : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,18 +242,40 @@ const LoginPage = () => {
               <>
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-stone-700">Guest name</span>
-                  <input name="name" value={formValues.name} onChange={handleChange} className="input-shell" placeholder="Full name" />
+                  <input
+                    name="name"
+                    value={formValues.name}
+                    onChange={handleChange}
+                    className="input-shell"
+                    placeholder="Full name"
+                    autoComplete="name"
+                  />
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-stone-700">Phone number</span>
-                  <input name="phone" value={formValues.phone} onChange={handleChange} className="input-shell" placeholder="+91 99999 12345" />
+                  <input
+                    name="phone"
+                    value={formValues.phone}
+                    onChange={handleChange}
+                    className="input-shell"
+                    placeholder="+91 99999 12345"
+                    autoComplete="tel"
+                  />
                 </label>
               </>
             ) : null}
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-stone-700">Email</span>
-              <input name="email" type="email" value={formValues.email} onChange={handleChange} className="input-shell" placeholder="Email address" />
+              <input
+                name="email"
+                type="email"
+                value={formValues.email}
+                onChange={handleChange}
+                className="input-shell"
+                placeholder="Email address"
+                autoComplete="email"
+              />
             </label>
 
             <label className="block">
@@ -191,6 +287,7 @@ const LoginPage = () => {
                 onChange={handleChange}
                 className="input-shell"
                 placeholder="Password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
               />
             </label>
 

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { Download, FileText, Printer } from "lucide-react";
 
-import api from "../../api/client";
 import BusyHourChart from "../../components/charts/BusyHourChart";
 import DonutStatusChart from "../../components/charts/DonutStatusChart";
 import LineSalesChart from "../../components/charts/LineSalesChart";
@@ -8,25 +7,84 @@ import PageHeader from "../../components/layout/PageHeader";
 import SectionCard from "../../components/ui/SectionCard";
 import StatCard from "../../components/ui/StatCard";
 import LoadingScreen from "../../components/ui/LoadingScreen";
+import { useApiQuery } from "../../context/QueryClientContext";
+import { useToast } from "../../context/ToastContext";
+import { downloadCsv, openPrintWindow } from "../../utils/helpers";
 
 const ReportsPage = () => {
-  const [report, setReport] = useState(null);
-  const [error, setError] = useState("");
+  const { pushToast } = useToast();
+  const { data: report, error, isLoading } = useApiQuery({
+    queryKey: ["reports-overview"],
+    url: "/reports/overview",
+    staleTime: 45000,
+  });
 
-  useEffect(() => {
-    const loadReport = async () => {
-      try {
-        const response = await api.get("/reports/overview");
-        setReport(response.data);
-      } catch (requestError) {
-        setError(requestError.response?.data?.message || "Unable to load reports.");
-      }
-    };
+  const exportCsv = () => {
+    if (!report) {
+      return;
+    }
 
-    loadReport();
-  }, []);
+    downloadCsv("smart-restaurant-report.csv", [
+      ["Card", "Value", "Subtitle"],
+      ...report.cards.map((card) => [card.title, card.value, card.subtitle]),
+      [],
+      ["Top Restaurant", "Revenue", "Bookings", "Rating"],
+      ...report.topRestaurants.map((restaurant) => [restaurant.name, restaurant.revenue, restaurant.bookings, restaurant.rating]),
+      [],
+      ["Top Item", "Orders", "Revenue"],
+      ...report.topItems.map((item) => [item.name, item.orders, item.revenue]),
+    ]);
 
-  if (!report && !error) {
+    pushToast({
+      tone: "success",
+      title: "CSV exported",
+      message: "The current report snapshot has been downloaded.",
+    });
+  };
+
+  const exportPdf = () => {
+    if (!report) {
+      return;
+    }
+
+    openPrintWindow({
+      title: "Smart Restaurant Performance Report",
+      sections: [
+        `<p>${report.narrative.join(" ")}</p>`,
+        `<h2>Summary Cards</h2>
+         <table>
+           <thead><tr><th>Card</th><th>Value</th><th>Subtitle</th></tr></thead>
+           <tbody>
+             ${report.cards.map((card) => `<tr><td>${card.title}</td><td>${card.value}</td><td>${card.subtitle}</td></tr>`).join("")}
+           </tbody>
+         </table>`,
+        `<h2>Top Restaurants</h2>
+         <table>
+           <thead><tr><th>Branch</th><th>Revenue</th><th>Bookings</th><th>Rating</th></tr></thead>
+           <tbody>
+             ${report.topRestaurants
+               .map((restaurant) => `<tr><td>${restaurant.name}</td><td>${restaurant.revenue}</td><td>${restaurant.bookings}</td><td>${restaurant.rating}</td></tr>`)
+               .join("")}
+           </tbody>
+         </table>`,
+        `<h2>Top Items</h2>
+         <table>
+           <thead><tr><th>Dish</th><th>Orders</th><th>Revenue</th></tr></thead>
+           <tbody>
+             ${report.topItems.map((item) => `<tr><td>${item.name}</td><td>${item.orders}</td><td>${item.revenue}</td></tr>`).join("")}
+           </tbody>
+         </table>`,
+      ],
+    });
+
+    pushToast({
+      tone: "success",
+      title: "PDF view opened",
+      message: "Use the print dialog to save the report as PDF.",
+    });
+  };
+
+  if (isLoading && !report) {
     return <LoadingScreen label="Generating reports and analytics..." />;
   }
 
@@ -36,6 +94,18 @@ const ReportsPage = () => {
         eyebrow="Reports"
         title="Performance Reporting"
         description="Track revenue, branch output, menu movement, and service pressure from a reporting workspace that feels operational instead of academic."
+        action={
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={exportCsv} className="btn-secondary">
+              <Download className="mr-2 h-4 w-4" />
+              CSV
+            </button>
+            <button type="button" onClick={exportPdf} className="btn-primary">
+              <Printer className="mr-2 h-4 w-4" />
+              PDF
+            </button>
+          </div>
+        }
       />
 
       {error ? (
@@ -46,7 +116,7 @@ const ReportsPage = () => {
         <>
           <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {report.cards.map((card) => (
-              <StatCard key={card.title} title={card.title} value={card.value} subtitle={card.subtitle} />
+              <StatCard key={card.title} title={card.title} value={card.value} subtitle={card.subtitle} icon={FileText} />
             ))}
           </div>
 

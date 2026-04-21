@@ -19,6 +19,7 @@ const collectionKeys = {
   Booking: "bookings",
   Reservation: "reservations",
   Order: "orders",
+  AuditLog: "auditLogs",
 };
 
 const getCollectionKey = (modelName) => collectionKeys[modelName];
@@ -70,7 +71,7 @@ const buildListFilter = (queryParams = {}, searchFields = []) => {
   const searchTerm = queryParams.q;
 
   Object.entries(queryParams).forEach(([key, value]) => {
-    if (["q", "page", "limit", "sort"].includes(key) || value === "" || value === undefined || value === null || value === "all") {
+    if (["q", "page", "limit", "sort", "paged"].includes(key) || value === "" || value === undefined || value === null || value === "all") {
       return;
     }
 
@@ -105,6 +106,10 @@ const buildScopeFilter = (req, modelName) => {
 
     if (modelName === "User") {
       return restaurantId ? { $or: [{ restaurant: restaurantId }, { role: roles.GUEST }] } : { _id: "__none__" };
+    }
+
+    if (modelName === "AuditLog") {
+      return restaurantId ? { restaurant: restaurantId } : { _id: "__none__" };
     }
 
     if (["MenuItem", "Table", "Booking", "Reservation", "Order"].includes(modelName)) {
@@ -198,6 +203,7 @@ const store = {
   bookings: [],
   reservations: [],
   orders: [],
+  auditLogs: [],
 };
 
 const hydrate = (modelName, item) => {
@@ -234,6 +240,10 @@ const hydrate = (modelName, item) => {
         ...orderItem,
         menuItem: orderItem.menuItem ? store.menuItems.find((entry) => entry._id === orderItem.menuItem) || null : null,
       }));
+      return nextItem;
+    case "AuditLog":
+      nextItem.actor = nextItem.actor ? hydrate("User", store.users.find((entry) => entry._id === nextItem.actor)) : null;
+      nextItem.restaurant = nextItem.restaurant ? hydrate("Restaurant", store.restaurants.find((entry) => entry._id === nextItem.restaurant)) : null;
       return nextItem;
     default:
       return nextItem;
@@ -999,6 +1009,59 @@ const initStore = () => {
     }
   );
 
+  store.auditLogs = [
+    {
+      _id: createId(),
+      action: "update",
+      entityType: "MenuItem",
+      entityId: urbanMenuThree,
+      entityLabel: "Smash Burger Combo",
+      actor: urbanAdminId,
+      actorName: "Arjun Mehta",
+      actorRole: roles.RESTAURANT_ADMIN,
+      restaurant: urbanBitesId,
+      message: "Arjun Mehta updated MenuItem \"Smash Burger Combo\".",
+      metadata: {},
+      createdAt: dateMinus(1, 11, 20),
+      updatedAt: dateMinus(1, 11, 20),
+    },
+    {
+      _id: createId(),
+      action: "status-change",
+      entityType: "Booking",
+      entityId: store.bookings[0]._id,
+      entityLabel: "Aisha Khan",
+      actor: urbanStaffId,
+      actorName: "Rohit Das",
+      actorRole: roles.STAFF,
+      restaurant: urbanBitesId,
+      message: "Rohit Das changed the status for Booking \"Aisha Khan\".",
+      metadata: {
+        status: {
+          before: "pending",
+          after: "confirmed",
+        },
+      },
+      createdAt: dateMinus(1, 12, 5),
+      updatedAt: dateMinus(1, 12, 5),
+    },
+    {
+      _id: createId(),
+      action: "create",
+      entityType: "Order",
+      entityId: store.orders[0]._id,
+      entityLabel: store.orders[0].orderNumber,
+      actor: coastalAdminId,
+      actorName: "Nisha Rao",
+      actorRole: roles.RESTAURANT_ADMIN,
+      restaurant: coastalSpiceId,
+      message: `Nisha Rao created Order "${store.orders[0].orderNumber}".`,
+      metadata: {},
+      createdAt: dateMinus(0, 15, 10),
+      updatedAt: dateMinus(0, 15, 10),
+    },
+  ];
+
   store.initialized = true;
 };
 
@@ -1010,6 +1073,25 @@ const sortItems = (items, sort = { createdAt: -1 }) => {
     if (leftValue === rightValue) return 0;
     return leftValue > rightValue ? -direction : direction;
   });
+};
+
+const paginateItems = (items, pagination) => {
+  if (!pagination?.enabled) {
+    return items;
+  }
+
+  const total = items.length;
+  const pagedItems = items.slice(pagination.skip, pagination.skip + pagination.limit);
+
+  return {
+    items: pagedItems,
+    pagination: {
+      page: pagination.page,
+      limit: pagination.limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pagination.limit)),
+    },
+  };
 };
 
 const prepareOrderPayload = (payload, existingItem = null) => {
@@ -1069,9 +1151,10 @@ const getScopedItems = (modelName, req, options = {}) => {
   const collection = store[getCollectionKey(modelName)] || [];
   const filter = buildListFilter(req.query || {}, options.searchFields || []);
   const scope = buildScopeFilter(req, modelName);
-  return sortItems(collection.filter((item) => matchesFilter(item, filter) && matchesFilter(item, scope)), options.sort).map((item) =>
+  const items = sortItems(collection.filter((item) => matchesFilter(item, filter) && matchesFilter(item, scope)), options.sort).map((item) =>
     hydrate(modelName, item)
   );
+  return paginateItems(items, options.pagination);
 };
 
 const getItemById = (modelName, id, req) => {
@@ -1347,6 +1430,7 @@ const getDashboardSummary = (req) => {
     })),
     recentOrders: orders.slice(0, 5),
     recentBookings: bookings.slice(0, 5),
+    recentActivity: listRecentAuditLogs(req, { limit: 6 }),
   };
 };
 
@@ -1454,6 +1538,31 @@ const chatbotReply = (message = "") => {
   return "I can help with bookings, menu browsing, ordering, and restaurant information. Ask about table availability, popular dishes, or branch timings.";
 };
 
+const recordAuditLog = (payload) => {
+  initStore();
+  const time = nowIso();
+  const entry = {
+    _id: createId(),
+    actor: payload.actor || null,
+    actorName: payload.actorName || "",
+    actorRole: payload.actorRole || "",
+    restaurant: payload.restaurant || null,
+    message: payload.message || "",
+    metadata: payload.metadata || {},
+    createdAt: time,
+    updatedAt: time,
+    ...payload,
+  };
+  store.auditLogs.unshift(entry);
+  return hydrate("AuditLog", entry);
+};
+
+const listRecentAuditLogs = (req, { limit = 6 } = {}) => {
+  return getScopedItems("AuditLog", req, {
+    sort: { createdAt: -1 },
+  }).slice(0, limit);
+};
+
 export const demoStore = {
   initStore,
   list(modelName, req, options) {
@@ -1481,5 +1590,7 @@ export const demoStore = {
   getAIInsights,
   getRecommendations,
   chatbotReply,
+  recordAuditLog,
+  listRecentAuditLogs,
   sanitizeUser,
 };

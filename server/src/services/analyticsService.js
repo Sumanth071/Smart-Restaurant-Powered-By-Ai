@@ -7,6 +7,7 @@ import Table from "../models/Table.js";
 import User from "../models/User.js";
 import { busyHourRange } from "../config/constants.js";
 import { buildScopeFilter, mergeFilters } from "./queryService.js";
+import { listRecentAuditLogs } from "./auditService.js";
 
 const formatCurrency = (value) => Number(value || 0).toFixed(2);
 
@@ -223,6 +224,7 @@ export const buildDashboardSummary = async (req) => {
     recentBookings: bookings
       .sort((left, right) => new Date(right.bookingDate) - new Date(left.bookingDate))
       .slice(0, 5),
+    recentActivity: await listRecentAuditLogs(req, { limit: 6 }),
   };
 };
 

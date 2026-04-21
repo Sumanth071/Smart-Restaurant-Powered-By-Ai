@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+import RouteErrorBoundary from "./components/layout/RouteErrorBoundary";
 import { getModuleRoles } from "./data/accessControl";
 
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
@@ -23,6 +24,12 @@ const GuestHomePage = lazy(() => import("./pages/guest/GuestHomePage"));
 const GuestOrderPage = lazy(() => import("./pages/guest/GuestOrderPage"));
 const SupportPage = lazy(() => import("./pages/guest/SupportPage"));
 
+const withBoundary = (Component) => (
+  <RouteErrorBoundary>
+    <Component />
+  </RouteErrorBoundary>
+);
+
 const App = () => (
   <Suspense
     fallback={
@@ -35,46 +42,46 @@ const App = () => (
     }
   >
     <Routes>
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<GuestHomePage />} />
-        <Route path="/book-table" element={<GuestBookingPage />} />
-        <Route path="/my-activity" element={<GuestActivityPage />} />
-        <Route path="/order-online" element={<GuestOrderPage />} />
-        <Route path="/support" element={<SupportPage />} />
-        <Route path="/login" element={<LoginPage />} />
+      <Route element={withBoundary(PublicLayout)}>
+        <Route path="/" element={withBoundary(GuestHomePage)} />
+        <Route path="/book-table" element={withBoundary(GuestBookingPage)} />
+        <Route path="/my-activity" element={withBoundary(GuestActivityPage)} />
+        <Route path="/order-online" element={withBoundary(GuestOrderPage)} />
+        <Route path="/support" element={withBoundary(SupportPage)} />
+        <Route path="/login" element={withBoundary(LoginPage)} />
       </Route>
 
       <Route element={<ProtectedRoute roles={["super-admin", "restaurant-admin", "staff"]} />}>
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route path="/dashboard" element={withBoundary(DashboardLayout)}>
           <Route element={<ProtectedRoute roles={getModuleRoles("overview")} />}>
-            <Route index element={<DashboardPage />} />
+            <Route index element={withBoundary(DashboardPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("restaurants")} />}>
-            <Route path="restaurants" element={<RestaurantsPage />} />
+            <Route path="restaurants" element={withBoundary(RestaurantsPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("menu")} />}>
-            <Route path="menu" element={<MenuPage />} />
+            <Route path="menu" element={withBoundary(MenuPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("tables")} />}>
-            <Route path="tables" element={<TablesPage />} />
+            <Route path="tables" element={withBoundary(TablesPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("bookings")} />}>
-            <Route path="bookings" element={<BookingsPage />} />
+            <Route path="bookings" element={withBoundary(BookingsPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("orders")} />}>
-            <Route path="orders" element={<OrdersPage />} />
+            <Route path="orders" element={withBoundary(OrdersPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("reservations")} />}>
-            <Route path="reservations" element={<ReservationsPage />} />
+            <Route path="reservations" element={withBoundary(ReservationsPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("users")} />}>
-            <Route path="users" element={<UsersPage />} />
+            <Route path="users" element={withBoundary(UsersPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("reports")} />}>
-            <Route path="reports" element={<ReportsPage />} />
+            <Route path="reports" element={withBoundary(ReportsPage)} />
           </Route>
           <Route element={<ProtectedRoute roles={getModuleRoles("ai")} />}>
-            <Route path="ai" element={<AIInsightsPage />} />
+            <Route path="ai" element={withBoundary(AIInsightsPage)} />
           </Route>
         </Route>
       </Route>

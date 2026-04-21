@@ -78,3 +78,59 @@ export const toSentenceCase = (value = "") =>
   String(value)
     .replace(/[-_]/g, " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());
+
+const escapeCsvValue = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+export const downloadCsv = (filename, rows) => {
+  const csv = rows.map((row) => row.map(escapeCsvValue).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+export const openPrintWindow = ({ title, sections }) => {
+  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1200,height=900");
+
+  if (!printWindow) {
+    return;
+  }
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>${title}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 32px; color: #2c1608; }
+          h1 { margin-bottom: 8px; }
+          h2 { margin-top: 32px; margin-bottom: 12px; font-size: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+          th, td { border: 1px solid #e5d8cc; padding: 10px; text-align: left; }
+          th { background: #fff2e5; }
+          p, li { line-height: 1.6; }
+        </style>
+      </head>
+      <body>
+        <h1>${title}</h1>
+        ${sections.join("")}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+};
+
+export const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });

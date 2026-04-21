@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
+import { useConfirm } from "../../context/ConfirmDialogContext";
+import { useToast } from "../../context/ToastContext";
 import { joinClasses, toSentenceCase } from "../../utils/helpers";
 
 const links = [
@@ -15,10 +17,26 @@ const links = [
 const PublicLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { confirm } = useConfirm();
+  const { pushToast } = useToast();
   const publicLinks = user?.role === "guest" ? [...links, { to: "/my-activity", label: "My Activity" }] : links;
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: "Logout from Smart Dine?",
+      description: "You can still browse the public portal after signing out.",
+      confirmLabel: "Logout",
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
     setMobileOpen(false);
     logout();
+    pushToast({
+      title: "Logged out",
+      message: "You are back in guest browsing mode.",
+    });
   };
 
   return (

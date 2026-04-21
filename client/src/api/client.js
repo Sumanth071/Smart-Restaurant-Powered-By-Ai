@@ -1,8 +1,13 @@
 import axios from "axios";
 
 export const tokenStorageKey = "smart-restaurant-token";
+let unauthorizedHandler = null;
 
 const isLocalApiUrl = (value = "") => /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i.test(String(value).trim());
+
+export const registerUnauthorizedHandler = (handler) => {
+  unauthorizedHandler = handler;
+};
 
 const resolveBaseUrl = () => {
   if (typeof window === "undefined") {
@@ -43,5 +48,20 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const requestUrl = String(error?.config?.url || "");
+    const isAuthRequest = requestUrl.includes("/auth/login") || requestUrl.includes("/auth/register") || requestUrl.includes("/auth/me");
+
+    if (status === 401 && !isAuthRequest && unauthorizedHandler) {
+      unauthorizedHandler(error);
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;

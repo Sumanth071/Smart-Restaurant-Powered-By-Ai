@@ -1,4 +1,4 @@
-import { joinClasses } from "../../utils/helpers";
+import { joinClasses, readFileAsDataUrl } from "../../utils/helpers";
 
 const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} }) => {
   const sourceItems = field.optionsSource ? dependencies[field.optionsSource] || [] : [];
@@ -60,6 +60,39 @@ const FormField = ({ field, value, onChange, dependencies = {}, formValues = {} 
           onChange={(event) => onChange(field.name, event.target.checked)}
           className="h-5 w-5 rounded border-stone-300 text-brand-500 focus:ring-brand-200"
         />
+      </label>
+    );
+  }
+
+  if (field.type === "file") {
+    const previewValue = formValues[field.targetField || field.name];
+
+    return (
+      <label className="block">
+        <span className="mb-2 block text-sm font-medium text-stone-700">{field.label}</span>
+        <div className="rounded-[26px] border border-dashed border-brand-200 bg-[#fff8f2] p-4">
+          <input
+            type="file"
+            accept={field.accept}
+            className="block w-full cursor-pointer text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-brand-500 file:px-4 file:py-2 file:font-semibold file:text-white"
+            onChange={async (event) => {
+              const file = event.target.files?.[0];
+
+              if (!file) {
+                return;
+              }
+
+              const dataUrl = await readFileAsDataUrl(file);
+              onChange(field.targetField || field.name, dataUrl);
+            }}
+          />
+          {field.helperText ? <span className="mt-3 block text-xs text-stone-500">{field.helperText}</span> : null}
+          {previewValue ? (
+            <div className="mt-4 overflow-hidden rounded-[22px] border border-stone-200 bg-white">
+              <img src={previewValue} alt={`${field.label} preview`} className="h-44 w-full object-cover" />
+            </div>
+          ) : null}
+        </div>
       </label>
     );
   }
