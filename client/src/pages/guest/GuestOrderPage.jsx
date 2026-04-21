@@ -23,16 +23,58 @@ const GuestOrderPage = () => {
   const [orderForm, setOrderForm] = useState(getOrderDefaults(user));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    setError("");
+
+    const [restaurantResult, menuResult] = await Promise.allSettled([api.get("/restaurants"), api.get("/menu-items")]);
+    const nextRestaurants = restaurantResult.status === "fulfilled" ? restaurantResult.value.data : [];
+    const nextMenuItems = menuResult.status === "fulfilled" ? menuResult.value.data : [];
+    const fallbackRestaurants = nextMenuItems.reduce((collection, item) => {
+      const restaurant = item.restaurant;
+      const restaurantId = String(restaurant?._id || restaurant || "");
+
+      if (!restaurantId || collection.some((entry) => String(entry._id) === restaurantId)) {
+        return collection;
+      }
+
+      return [
+        ...collection,
+        {
+          _id: restaurantId,
+          name: restaurant?.name || "Restaurant",
+        },
+      ];
+    }, []);
+
+    const resolvedRestaurants = nextRestaurants.length ? nextRestaurants : fallbackRestaurants;
+
+    setRestaurants(resolvedRestaurants);
+    setMenuItems(nextMenuItems);
+    setSelectedRestaurant((current) => {
+      if (current && resolvedRestaurants.some((restaurant) => String(restaurant._id) === String(current))) {
+        return current;
+      }
+
+      return nextMenuItems[0]?.restaurant?._id || resolvedRestaurants[0]?._id || "";
+    });
+
+    if (restaurantResult.status === "rejected" && menuResult.status === "rejected") {
+      setError("Unable to load the guest ordering menu right now. Please retry.");
+    } else if (!nextMenuItems.length) {
+      setError("No menu items are available right now. Please retry in a moment.");
+    }
+
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      const [restaurantResponse, menuResponse] = await Promise.all([api.get("/restaurants"), api.get("/menu-items")]);
-      setRestaurants(restaurantResponse.data);
-      setMenuItems(menuResponse.data);
-      setSelectedRestaurant(menuResponse.data[0]?.restaurant?._id || restaurantResponse.data[0]?._id || "");
-    };
-
-    loadData().catch(() => setError("Unable to load the guest ordering menu."));
+    loadData().catch(() => {
+      setIsLoading(false);
+      setError("Unable to load the guest ordering menu right now. Please retry.");
+    });
   }, []);
 
   useEffect(() => {
@@ -125,7 +167,14 @@ const GuestOrderPage = () => {
         </div>
 
         {message ? <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-600">{message}</div> : null}
-        {error ? <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div> : null}
+        {error ? (
+          <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-600 md:flex-row md:items-center md:justify-between">
+            <span>{error}</span>
+            <button type="button" onClick={() => loadData()} className="rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-600">
+              Retry
+            </button>
+          </div>
+        ) : null}
 
         <div className="mb-6 flex justify-center">
           <select value={selectedRestaurant} onChange={(event) => setSelectedRestaurant(event.target.value)} className="input-shell max-w-md">
@@ -139,31 +188,52 @@ const GuestOrderPage = () => {
 
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
           <SectionCard title="Menu Catalogue" subtitle="Browse dishes and build the cart with a clean guest ordering flow.">
-            <div className="grid gap-5 md:grid-cols-2">
-              {filteredMenu.map((item) => (
-                <article key={item._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
-                  <img src={item.image} alt={item.name} className="h-52 w-full object-cover" />
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900">{item.name}</h3>
-                        <p className="text-sm text-slate-500">{item.category}</p>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                        {item.isVeg ? "Veg" : "Non-Veg"}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm text-slate-600">{item.description}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <p className="text-lg font-bold text-amber-600">{formatCurrency(item.price)}</p>
-                      <button type="button" onClick={() => addToCart(item)} className="btn-primary px-4 py-2 text-sm">
-                        Add
-                      </button>
+            {isLoading ? (
+              <div className="grid gap-5 md:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
+                    <div className="h-52 animate-pulse bg-slate-100" />
+                    <div className="space-y-3 p-5">
+                      <div className="h-5 w-2/3 animate-pulse rounded-full bg-slate-100" />
+                      <div className="h-4 w-1/3 animate-pulse rounded-full bg-slate-100" />
+                      <div className="h-4 w-full animate-pulse rounded-full bg-slate-100" />
+                      <div className="h-4 w-5/6 animate-pulse rounded-full bg-slate-100" />
                     </div>
                   </div>
-                </article>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : filteredMenu.length ? (
+              <div className="grid gap-5 md:grid-cols-2">
+                {filteredMenu.map((item) => (
+                  <article key={item._id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
+                    <img src={item.image} alt={item.name} className="h-52 w-full object-cover" />
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900">{item.name}</h3>
+                          <p className="text-sm text-slate-500">{item.category}</p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                          {item.isVeg ? "Veg" : "Non-Veg"}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm text-slate-600">{item.description}</p>
+                      <div className="mt-4 flex items-center justify-between">
+                        <p className="text-lg font-bold text-amber-600">{formatCurrency(item.price)}</p>
+                        <button type="button" onClick={() => addToCart(item)} className="btn-primary px-4 py-2 text-sm">
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+                <p className="text-lg font-semibold text-slate-900">No menu items are available for this restaurant.</p>
+                <p className="mt-2 text-sm text-slate-500">Choose another restaurant or retry the catalogue refresh.</p>
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard
