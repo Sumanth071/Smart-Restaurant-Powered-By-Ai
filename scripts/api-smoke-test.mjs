@@ -167,6 +167,28 @@ const run = async () => {
         items: [],
       },
     });
+    await expectFailure("/orders", {
+      token: guestToken,
+      method: "POST",
+      status: 400,
+      includes: "discount cannot exceed order subtotal",
+      body: {
+        restaurant: baseRestaurantId,
+        customerName: "Guest Smoke Test",
+        customerEmail: "guest@example.com",
+        customerPhone: "+91 90000 20000",
+        orderType: "delivery",
+        discount: 99999,
+        items: [
+          {
+            menuItem: baseMenuItem._id,
+            name: baseMenuItem.name,
+            quantity: 1,
+            price: baseMenuItem.price,
+          },
+        ],
+      },
+    });
 
     const uniqueSuffix = Date.now();
 
@@ -342,6 +364,22 @@ const run = async () => {
           },
         ],
         notes: "Updated smoke test order",
+      },
+    });
+    await request(`/orders/${order._id}`, {
+      token: guestToken,
+      method: "PUT",
+      body: {
+        status: "cancelled",
+      },
+    });
+    await expectFailure(`/orders/${order._id}`, {
+      token: guestToken,
+      method: "PUT",
+      status: 400,
+      includes: "discount cannot exceed order subtotal",
+      body: {
+        discount: 99999,
       },
     });
 

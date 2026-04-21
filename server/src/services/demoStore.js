@@ -1013,7 +1013,7 @@ const sortItems = (items, sort = { createdAt: -1 }) => {
 };
 
 const prepareOrderPayload = (payload, existingItem = null) => {
-  const nextPayload = { ...payload };
+  const nextPayload = { ...(existingItem ? clone(existingItem) : {}), ...payload };
   const items = Array.isArray(nextPayload.items) ? nextPayload.items : [];
 
   if (!items.length) {
@@ -1038,10 +1038,19 @@ const prepareOrderPayload = (payload, existingItem = null) => {
     };
   });
 
+  const subtotal = nextPayload.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const discount = Number(nextPayload.discount ?? 0);
+
+  requireNonNegativeNumber(discount, "Discount");
+
+  if (discount > subtotal) {
+    throw createValidationError("Discount cannot exceed order subtotal");
+  }
+
   nextPayload.orderNumber = existingItem?.orderNumber || nextPayload.orderNumber || `ORD-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
-  nextPayload.discount = Number(nextPayload.discount ?? existingItem?.discount ?? 0);
+  nextPayload.discount = discount;
   nextPayload.paymentStatus = nextPayload.paymentStatus || existingItem?.paymentStatus || "pending";
-  nextPayload.totalAmount = nextPayload.items.reduce((sum, item) => sum + item.quantity * item.price, 0) - nextPayload.discount;
+  nextPayload.totalAmount = subtotal - discount;
   nextPayload.placedAt = existingItem?.placedAt || nextPayload.placedAt || nowIso();
 
   return nextPayload;

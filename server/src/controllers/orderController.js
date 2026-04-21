@@ -5,7 +5,7 @@ import { sanitizeOrderPayload } from "../services/payloadSanitizers.js";
 
 const prepareOrderPayload = async (payload, req, existingItem) => {
   const sanitizedPayload = await sanitizeOrderPayload(payload, req, existingItem);
-  return normalizeOrderPayload(sanitizedPayload);
+  return normalizeOrderPayload(sanitizedPayload, existingItem);
 };
 
 const orderCrud = createCrudController(Order, {

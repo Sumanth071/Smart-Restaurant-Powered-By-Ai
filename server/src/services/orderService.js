@@ -3,8 +3,23 @@ import { requireMinNumber, requireNonNegativeNumber } from "./validationService.
 
 export const generateOrderNumber = () => `ORD-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
 
-export const normalizeOrderPayload = async (payload) => {
-  const nextPayload = { ...payload };
+const toPlainObject = (value) => {
+  if (!value) {
+    return {};
+  }
+
+  if (typeof value.toObject === "function") {
+    return value.toObject();
+  }
+
+  return { ...value };
+};
+
+export const normalizeOrderPayload = async (payload, existingItem = null) => {
+  const nextPayload = {
+    ...toPlainObject(existingItem),
+    ...payload,
+  };
   const items = Array.isArray(nextPayload.items) ? nextPayload.items : [];
 
   if (!items.length) {
@@ -38,9 +53,18 @@ export const normalizeOrderPayload = async (payload) => {
     };
   });
 
+  const subtotal = nextPayload.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const discount = Number(nextPayload.discount ?? 0);
+
+  requireNonNegativeNumber(discount, "Discount");
+
+  if (discount > subtotal) {
+    throw new Error("Discount cannot exceed order subtotal");
+  }
+
   nextPayload.orderNumber = nextPayload.orderNumber || generateOrderNumber();
-  nextPayload.totalAmount =
-    nextPayload.items.reduce((sum, item) => sum + item.quantity * item.price, 0) - Number(nextPayload.discount || 0);
+  nextPayload.discount = discount;
+  nextPayload.totalAmount = subtotal - discount;
 
   return nextPayload;
 };
