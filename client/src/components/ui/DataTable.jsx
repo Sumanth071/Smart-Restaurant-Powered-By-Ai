@@ -3,6 +3,8 @@ import { PencilLine, Trash2 } from "lucide-react";
 import EmptyState from "./EmptyState";
 
 const DataTable = ({ columns, rows, onEdit, onDelete, emptyTitle, emptyDescription }) => {
+  const showActions = Boolean(onEdit || onDelete);
+
   if (!rows.length) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
@@ -19,7 +21,9 @@ const DataTable = ({ columns, rows, onEdit, onDelete, emptyTitle, emptyDescripti
                     {column.label}
                   </th>
                 ))}
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Actions</th>
+                {showActions ? (
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Actions</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 bg-white/90">
@@ -30,24 +34,30 @@ const DataTable = ({ columns, rows, onEdit, onDelete, emptyTitle, emptyDescripti
                       {column.render ? column.render(row) : row[column.key] || "-"}
                     </td>
                   ))}
-                  <td className="px-4 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(row)}
-                        className="rounded-2xl border border-stone-200 p-2 text-stone-500 transition hover:border-brand-100 hover:bg-brand-50 hover:text-brand-600"
-                      >
-                        <PencilLine className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(row)}
-                        className="rounded-2xl border border-stone-200 p-2 text-stone-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
+                  {showActions ? (
+                    <td className="px-4 py-4">
+                      <div className="flex justify-end gap-2">
+                        {onEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => onEdit(row)}
+                            className="rounded-2xl border border-stone-200 p-2 text-stone-500 transition hover:border-brand-100 hover:bg-brand-50 hover:text-brand-600"
+                          >
+                            <PencilLine className="h-4 w-4" />
+                          </button>
+                        ) : null}
+                        {onDelete ? (
+                          <button
+                            type="button"
+                            onClick={() => onDelete(row)}
+                            className="rounded-2xl border border-stone-200 p-2 text-stone-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>
@@ -66,18 +76,24 @@ const DataTable = ({ columns, rows, onEdit, onDelete, emptyTitle, emptyDescripti
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex gap-2">
-              <button type="button" onClick={() => onEdit(row)} className="btn-secondary flex-1 py-2 text-sm">
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(row)}
-                className="flex-1 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600"
-              >
-                Delete
-              </button>
-            </div>
+            {showActions ? (
+              <div className="mt-4 flex gap-2">
+                {onEdit ? (
+                  <button type="button" onClick={() => onEdit(row)} className="btn-secondary flex-1 py-2 text-sm">
+                    Edit
+                  </button>
+                ) : null}
+                {onDelete ? (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(row)}
+                    className="flex-1 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600"
+                  >
+                    Delete
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

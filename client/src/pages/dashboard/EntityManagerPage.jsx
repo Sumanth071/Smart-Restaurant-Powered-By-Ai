@@ -10,6 +10,7 @@ import Modal from "../../components/ui/Modal";
 import SectionCard from "../../components/ui/SectionCard";
 import StatCard from "../../components/ui/StatCard";
 import { useAuth } from "../../context/AuthContext";
+import { getAccessSummary, getModulePermissions } from "../../data/accessControl";
 
 const buildEmptyForm = (fields) =>
   fields.reduce((accumulator, field) => {
@@ -17,7 +18,7 @@ const buildEmptyForm = (fields) =>
     return accumulator;
   }, {});
 
-const EntityManagerPage = ({ config }) => {
+const EntityManagerPage = ({ config, moduleKey }) => {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [dependencies, setDependencies] = useState({});
@@ -29,6 +30,8 @@ const EntityManagerPage = ({ config }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [formValues, setFormValues] = useState(buildEmptyForm(config.fields));
   const deferredSearch = useDeferredValue(search);
+  const permissions = useMemo(() => getModulePermissions(moduleKey, user?.role), [moduleKey, user?.role]);
+  const accessSummary = useMemo(() => getAccessSummary(permissions), [permissions]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -70,12 +73,20 @@ const EntityManagerPage = ({ config }) => {
   const highlights = useMemo(() => config.getHighlights?.(items, dependencies) || [], [config, dependencies, items]);
 
   const openCreateModal = () => {
+    if (!permissions.create) {
+      return;
+    }
+
     setSelectedItem(null);
     setFormValues(buildEmptyForm(config.fields));
     setModalOpen(true);
   };
 
   const openEditModal = (item) => {
+    if (!permissions.edit) {
+      return;
+    }
+
     setSelectedItem(item);
     setFormValues(config.toFormValues ? config.toFormValues(item, dependencies) : item);
     setModalOpen(true);
@@ -115,6 +126,10 @@ const EntityManagerPage = ({ config }) => {
   };
 
   const handleDelete = async (item) => {
+    if (!permissions.delete) {
+      return;
+    }
+
     const confirmed = window.confirm(`Delete ${config.title.toLowerCase()} record for "${item.name || item.guestName || item.orderNumber}"?`);
 
     if (!confirmed) {
@@ -145,10 +160,12 @@ const EntityManagerPage = ({ config }) => {
               <RefreshCcw className="mr-2 h-4 w-4" />
               Refresh
             </button>
-            <button type="button" onClick={openCreateModal} className="btn-primary">
-              <Plus className="mr-2 h-4 w-4" />
-              {config.buttonLabel}
-            </button>
+            {permissions.create ? (
+              <button type="button" onClick={openCreateModal} className="btn-primary">
+                <Plus className="mr-2 h-4 w-4" />
+                {config.buttonLabel}
+              </button>
+            ) : null}
           </div>
         }
       />
@@ -164,6 +181,10 @@ const EntityManagerPage = ({ config }) => {
           ))}
         </div>
       ) : null}
+
+      <div className="mb-6 rounded-[26px] border border-brand-100 bg-[#fff8f1] px-5 py-4 text-sm text-stone-600">
+        {accessSummary}
+      </div>
 
       <SectionCard
         title="Current Records"
@@ -181,44 +202,46 @@ const EntityManagerPage = ({ config }) => {
         <DataTable
           columns={config.columns}
           rows={visibleItems}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
+          onEdit={permissions.edit ? openEditModal : undefined}
+          onDelete={permissions.delete ? handleDelete : undefined}
           emptyTitle={config.emptyTitle}
           emptyDescription={config.emptyDescription}
         />
       </SectionCard>
 
-      <Modal
-        open={modalOpen}
-        onClose={closeModal}
-        title={selectedItem ? `Edit ${config.buttonLabel.replace("Add ", "")}` : config.buttonLabel}
-        subtitle="Update the form and save to apply changes to the workspace."
-      >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
-            {config.fields.map((field) => (
-              <div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
-                <FormField
-                  field={field}
-                  value={formValues[field.name]}
-                  onChange={handleFieldChange}
-                  dependencies={dependencies}
-                  formValues={formValues}
-                />
-              </div>
-            ))}
-          </div>
+      {permissions.create || permissions.edit ? (
+        <Modal
+          open={modalOpen}
+          onClose={closeModal}
+          title={selectedItem ? `Edit ${config.buttonLabel.replace("Add ", "")}` : config.buttonLabel}
+          subtitle="Update the form and save to apply changes to the workspace."
+        >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              {config.fields.map((field) => (
+                <div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
+                  <FormField
+                    field={field}
+                    value={formValues[field.name]}
+                    onChange={handleFieldChange}
+                    dependencies={dependencies}
+                    formValues={formValues}
+                  />
+                </div>
+              ))}
+            </div>
 
-          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
-            <button type="button" onClick={closeModal} className="btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" disabled={submitting} className="btn-primary">
-              {submitting ? "Saving..." : selectedItem ? "Update Record" : "Create Record"}
-            </button>
-          </div>
-        </form>
-      </Modal>
+            <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+              <button type="button" onClick={closeModal} className="btn-secondary">
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting} className="btn-primary">
+                {submitting ? "Saving..." : selectedItem ? "Update Record" : "Create Record"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      ) : null}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { setTimeout as delay } from "timers/promises";
 
-const baseUrl = process.env.SMOKE_BASE_URL || "http://127.0.0.1:5050/api";
+const baseUrl = process.env.SMOKE_BASE_URL || "http://127.0.0.1:8080/api";
 const workspace = process.cwd();
 
 const decodeJwtPayload = (token) => JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));

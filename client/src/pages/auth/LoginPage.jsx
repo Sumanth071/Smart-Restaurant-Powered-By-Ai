@@ -5,6 +5,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { demoAccounts } from "../../data/demoAccounts";
 
+const resolveAuthErrorMessage = (error) => {
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  if (!error?.response) {
+    return "The local API is not reachable right now. Please make sure the backend is running on 127.0.0.1:8080.";
+  }
+
+  return "Unable to complete authentication.";
+};
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const { user, login, register } = useAuth();
@@ -49,7 +61,7 @@ const LoginPage = () => {
 
       navigate(currentUser.role === "guest" ? "/book-table" : "/dashboard");
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to complete authentication.");
+      setError(resolveAuthErrorMessage(requestError));
     } finally {
       setSubmitting(false);
     }

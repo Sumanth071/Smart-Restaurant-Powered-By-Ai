@@ -9,66 +9,67 @@ import {
   UserCog,
   UtensilsCrossed,
 } from "lucide-react";
+import { getModuleRoles } from "./accessControl";
 
 export const dashboardNavigation = [
   {
     label: "Overview",
     to: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("overview"),
   },
   {
     label: "Restaurants",
     to: "/dashboard/restaurants",
     icon: Store,
-    roles: ["super-admin", "restaurant-admin"],
+    roles: getModuleRoles("restaurants"),
   },
   {
     label: "Menu",
     to: "/dashboard/menu",
     icon: UtensilsCrossed,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("menu"),
   },
   {
     label: "Tables",
     to: "/dashboard/tables",
     icon: TableProperties,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("tables"),
   },
   {
     label: "Bookings",
     to: "/dashboard/bookings",
     icon: CalendarCheck2,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("bookings"),
   },
   {
     label: "Orders",
     to: "/dashboard/orders",
     icon: ReceiptText,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("orders"),
   },
   {
     label: "Reservations",
     to: "/dashboard/reservations",
     icon: CalendarCheck2,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("reservations"),
   },
   {
     label: "Users",
     to: "/dashboard/users",
     icon: UserCog,
-    roles: ["super-admin", "restaurant-admin"],
+    roles: getModuleRoles("users"),
   },
   {
     label: "Reports",
     to: "/dashboard/reports",
     icon: ChartColumnBig,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("reports"),
   },
   {
     label: "AI Hub",
     to: "/dashboard/ai",
     icon: Bot,
-    roles: ["super-admin", "restaurant-admin", "staff"],
+    roles: getModuleRoles("ai"),
   },
 ];

@@ -109,7 +109,7 @@ Create these files from the provided examples:
 Default local examples already point to:
 
 - Frontend: `http://127.0.0.1:5173`
-- Backend API: `http://127.0.0.1:5050/api`
+- Backend API: `http://127.0.0.1:8080/api`
 - MongoDB: `mongodb://127.0.0.1:27017/ai-smart-restaurant`
 
 ### 3. Seed data
@@ -127,7 +127,7 @@ npm run dev
 Local URLs:
 
 - Frontend: `http://127.0.0.1:5173`
-- Backend API: `http://127.0.0.1:5050/api`
+- Backend API: `http://127.0.0.1:8080/api`
 
 ## Production Notes
 

@@ -19,6 +19,7 @@ import GuestActivityPage from "./pages/guest/GuestActivityPage";
 import GuestHomePage from "./pages/guest/GuestHomePage";
 import GuestOrderPage from "./pages/guest/GuestOrderPage";
 import SupportPage from "./pages/guest/SupportPage";
+import { getModuleRoles } from "./data/accessControl";
 
 const App = () => (
   <Routes>
@@ -33,16 +34,36 @@ const App = () => (
 
     <Route element={<ProtectedRoute roles={["super-admin", "restaurant-admin", "staff"]} />}>
       <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="restaurants" element={<RestaurantsPage />} />
-        <Route path="menu" element={<MenuPage />} />
-        <Route path="tables" element={<TablesPage />} />
-        <Route path="bookings" element={<BookingsPage />} />
-        <Route path="orders" element={<OrdersPage />} />
-        <Route path="reservations" element={<ReservationsPage />} />
-        <Route path="users" element={<UsersPage />} />
-        <Route path="reports" element={<ReportsPage />} />
-        <Route path="ai" element={<AIInsightsPage />} />
+        <Route element={<ProtectedRoute roles={getModuleRoles("overview")} />}>
+          <Route index element={<DashboardPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("restaurants")} />}>
+          <Route path="restaurants" element={<RestaurantsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("menu")} />}>
+          <Route path="menu" element={<MenuPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("tables")} />}>
+          <Route path="tables" element={<TablesPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("bookings")} />}>
+          <Route path="bookings" element={<BookingsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("orders")} />}>
+          <Route path="orders" element={<OrdersPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("reservations")} />}>
+          <Route path="reservations" element={<ReservationsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("users")} />}>
+          <Route path="users" element={<UsersPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("reports")} />}>
+          <Route path="reports" element={<ReportsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={getModuleRoles("ai")} />}>
+          <Route path="ai" element={<AIInsightsPage />} />
+        </Route>
       </Route>
     </Route>
 

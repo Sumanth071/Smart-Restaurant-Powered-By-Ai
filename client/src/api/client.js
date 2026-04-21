@@ -15,7 +15,7 @@ const resolveBaseUrl = () => {
 
   if (hostname === "127.0.0.1" || hostname === "localhost") {
     if (port === "4173" || port === "5173") {
-      return `http://${hostname}:5050/api`;
+      return `http://${hostname}:8080/api`;
     }
   }
 
