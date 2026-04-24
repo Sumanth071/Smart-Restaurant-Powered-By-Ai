@@ -171,7 +171,7 @@ const run = async () => {
       token: guestToken,
       method: "POST",
       status: 400,
-      includes: "discount cannot exceed order subtotal",
+      includes: "guests cannot set order pricing or payment fields manually",
       body: {
         restaurant: baseRestaurantId,
         customerName: "Guest Smoke Test",
@@ -377,7 +377,7 @@ const run = async () => {
       token: guestToken,
       method: "PUT",
       status: 400,
-      includes: "discount cannot exceed order subtotal",
+      includes: "guests cannot set order pricing or payment fields manually",
       body: {
         discount: 99999,
       },

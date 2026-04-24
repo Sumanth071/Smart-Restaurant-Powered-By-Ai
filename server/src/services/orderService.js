@@ -1,5 +1,5 @@
 import MenuItem from "../models/MenuItem.js";
-import { requireMinNumber, requireNonNegativeNumber } from "./validationService.js";
+import { createValidationError, requireMinNumber, requireNonNegativeNumber } from "./validationService.js";
 
 export const generateOrderNumber = () => `ORD-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`;
 
@@ -23,7 +23,7 @@ export const normalizeOrderPayload = async (payload, existingItem = null) => {
   const items = Array.isArray(nextPayload.items) ? nextPayload.items : [];
 
   if (!items.length) {
-    throw new Error("At least one menu item is required for an order");
+    throw createValidationError("At least one menu item is required for an order");
   }
 
   const catalog = nextPayload.restaurant
@@ -59,7 +59,7 @@ export const normalizeOrderPayload = async (payload, existingItem = null) => {
   requireNonNegativeNumber(discount, "Discount");
 
   if (discount > subtotal) {
-    throw new Error("Discount cannot exceed order subtotal");
+    throw createValidationError("Discount cannot exceed order subtotal");
   }
 
   nextPayload.orderNumber = nextPayload.orderNumber || generateOrderNumber();

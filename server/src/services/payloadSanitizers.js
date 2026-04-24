@@ -1,4 +1,5 @@
 import { roles } from "../config/constants.js";
+import { createValidationError } from "./validationService.js";
 
 const pick = (payload = {}, keys = []) =>
   keys.reduce((accumulator, key) => {
@@ -84,6 +85,10 @@ export const sanitizeReservationPayload = async (payload, req, existingItem) => 
 export const sanitizeOrderPayload = async (payload, req, existingItem) => {
   if (!isGuestContext(req)) {
     return payload;
+  }
+
+  if (payload.discount !== undefined || payload.paymentStatus !== undefined || payload.totalAmount !== undefined) {
+    throw createValidationError("Guests cannot set order pricing or payment fields manually");
   }
 
   const nextPayload = pick(payload, orderEditableFields);

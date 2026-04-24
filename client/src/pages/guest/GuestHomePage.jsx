@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import api from "../../api/client";
 import SectionCard from "../../components/ui/SectionCard";
+import { developerShowcase } from "../../data/developerShowcase";
 import { formatCurrency } from "../../utils/helpers";
 
 const GuestHomePage = () => {
@@ -184,6 +185,55 @@ const GuestHomePage = () => {
               Explore Full Menu
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
+          </SectionCard>
+        </div>
+      </section>
+
+      <section className="px-6 pb-12 md:px-10 md:pb-20">
+        <div className="mx-auto max-w-7xl">
+          <SectionCard
+            title="Meet the Project Team"
+            subtitle="A dedicated showcase for the core team behind the software, created for demos, reviews, and client presentations."
+          >
+            <div className="grid gap-6 lg:grid-cols-3">
+              {developerShowcase.map((developer) => (
+                <article
+                  key={developer.id}
+                  className="overflow-hidden rounded-[30px] border border-brand-100 bg-white shadow-[0_24px_55px_rgba(108,54,16,0.08)]"
+                >
+                  <div className="relative p-4 pb-0">
+                    <div className="relative h-[24rem] overflow-hidden rounded-[28px] border border-brand-100/80 bg-gradient-to-b from-[#fff2e5] via-[#fff8f2] to-white shadow-[0_20px_45px_rgba(108,54,16,0.10)]">
+                      <img
+                        src={developer.image}
+                        alt={developer.name}
+                        className={`h-full w-full object-cover transition ${developer.imageClassName ?? "object-top"}`}
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
+                    </div>
+                    <div className="absolute left-9 top-9 rounded-full border border-white/65 bg-white/88 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-700 backdrop-blur-sm">
+                      Core Team
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="text-center">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-600">{developer.role}</p>
+                      <h3 className="mt-3 font-display text-3xl font-semibold text-stone-900">{developer.name}</h3>
+                    </div>
+
+                    <p className="mt-4 text-sm leading-7 text-stone-600">{developer.contribution}</p>
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {developer.highlights.map((highlight) => (
+                        <span key={highlight} className="rounded-full border border-brand-100 bg-[#fff7ef] px-3 py-1 text-xs font-semibold text-brand-700">
+                          {highlight}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </SectionCard>
         </div>
       </section>
